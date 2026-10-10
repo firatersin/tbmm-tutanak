@@ -1,0 +1,24 @@
+{
+  "key": "28-4-80",
+  "donem": 28,
+  "yil": 4,
+  "birlesim": 80,
+  "id": "ab1cde1d-1cbe-4cfe-bd66-019d71fdb85f",
+  "tarih": "09 Nisan 2026 Perşembe",
+  "durum": "Basılmış",
+  "kaynaklar": {
+    "metin_html": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/80/Tam/7d503dcf-7dcc-4114-be89-b9bb4406a2c1.html",
+    "pdf": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/80/Basilmis/16786ad1-38b5-46ee-9bd6-9ee0f3bc1654.pdf",
+    "docx": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/80/Tam/809d970f-2fff-47db-8553-36fb6e7d7d6c.docx",
+    "ozet": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/80/Ozet/4252a2db-a567-45b5-888d-56dc551877cc.html",
+    "oylama": [],
+    "tumu": [
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/80/Basilmis/16786ad1-38b5-46ee-9bd6-9ee0f3bc1654.pdf",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/80/Tam/49d1be2f-c762-46ea-9afa-aa37fff9d732.pdf",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/80/Tam/7d503dcf-7dcc-4114-be89-b9bb4406a2c1.html",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/80/Tam/809d970f-2fff-47db-8553-36fb6e7d7d6c.docx"
+    ]
+  },
+  "oylama_sayisi": 0,
+  "indirildi": "2026-10-10T22:58:34+03:00"
+}

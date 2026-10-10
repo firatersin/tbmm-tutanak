@@ -1,0 +1,79 @@
+name: Tutanakları güncelle ve yayınla
+
+on:
+  schedule:
+    # Türkiye saatiyle 09:00 ve 21:00 (UTC+3)
+    - cron: "0 6 * * *"
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+    inputs:
+      donem:
+        description: "Geriye dönük indirme için dönem (ör. 28) — boş bırakılırsa günlük tarama"
+        required: false
+      yil:
+        description: "Geriye dönük indirme için yasama yılı (ör. 4)"
+        required: false
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: tbmm
+  cancel-in-progress: false
+
+jobs:
+  guncelle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: TBMM'yi tara
+        # Kod değişikliği push'larında tarama yapma, sadece siteyi yeniden üret
+        if: github.event_name != 'push'
+        env:
+          DONEM: ${{ inputs.donem }}
+          YIL: ${{ inputs.yil }}
+        run: |
+          if [ -n "$DONEM" ] && [ -n "$YIL" ]; then
+            python tbmm_tutanak.py --arayuzsuz --donem "$DONEM" --yil "$YIL"
+          else
+            python tbmm_tutanak.py --arayuzsuz
+          fi
+
+      - name: Yeni verileri kaydet
+        if: github.event_name != 'push'
+        run: |
+          git config user.name "tbmm-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data state.json
+          if git diff --cached --quiet; then
+            echo "Yeni tutanak yok."
+          else
+            git commit -m "Tutanak güncellemesi $(TZ=Europe/Istanbul date '+%Y-%m-%d %H:%M')"
+            git push
+          fi
+
+      - name: Siteyi üret
+        run: python arayuz.py
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  yayinla:
+    needs: guncelle
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

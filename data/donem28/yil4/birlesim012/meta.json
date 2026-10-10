@@ -1,0 +1,24 @@
+{
+  "key": "28-4-12",
+  "donem": 28,
+  "yil": 4,
+  "birlesim": 12,
+  "id": "60f5c919-2799-414c-a381-019a4ef6becd",
+  "tarih": "04 Kasım 2025 Salı",
+  "durum": "Basılmış",
+  "kaynaklar": {
+    "metin_html": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/12/Tam/62d5e459-f45d-4bb2-83e0-ef7f1221907a.html",
+    "pdf": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/12/Basilmis/259546ca-06fd-49ba-a1b4-f0dcf0a0a63c.pdf",
+    "docx": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/12/Tam/ab851b47-60fc-489d-988b-1700dd9503b6.docx",
+    "ozet": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/12/Ozet/ca0b661d-3fe7-48ab-8754-a87786606ad3.html",
+    "oylama": [],
+    "tumu": [
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/12/Basilmis/259546ca-06fd-49ba-a1b4-f0dcf0a0a63c.pdf",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/12/Tam/1c59f01d-bf19-491d-8031-80b56d62d8f5.pdf",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/12/Tam/62d5e459-f45d-4bb2-83e0-ef7f1221907a.html",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/12/Tam/ab851b47-60fc-489d-988b-1700dd9503b6.docx"
+    ]
+  },
+  "oylama_sayisi": 0,
+  "indirildi": "2026-10-10T22:51:52+03:00"
+}

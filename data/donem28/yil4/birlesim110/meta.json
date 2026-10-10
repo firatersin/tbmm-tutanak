@@ -1,0 +1,23 @@
+{
+  "key": "28-4-110",
+  "donem": 28,
+  "yil": 4,
+  "birlesim": 110,
+  "id": "0c50c08b-87e1-4ab6-82f7-019f609aa43d",
+  "tarih": "14 Temmuz 2026 Salı",
+  "durum": "Tam",
+  "kaynaklar": {
+    "metin_html": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/110/Tam/01385f09-c799-4eed-bf05-22f0d591c6b2.html",
+    "pdf": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/110/Tam/dedef02d-f34b-4788-a490-290e347d632f.pdf",
+    "docx": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/110/Tam/39523a7c-b778-4858-9326-d0e0d08eba2f.docx",
+    "ozet": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/110/Ozet/356cf028-5cdf-4e9f-bad0-351dbccaa95a.html",
+    "oylama": [],
+    "tumu": [
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/110/Tam/01385f09-c799-4eed-bf05-22f0d591c6b2.html",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/110/Tam/39523a7c-b778-4858-9326-d0e0d08eba2f.docx",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/110/Tam/dedef02d-f34b-4788-a490-290e347d632f.pdf"
+    ]
+  },
+  "oylama_sayisi": 0,
+  "indirildi": "2026-10-10T23:01:49+03:00"
+}

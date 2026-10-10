@@ -1,0 +1,25 @@
+{
+  "key": "28-4-124",
+  "donem": 28,
+  "yil": 4,
+  "birlesim": 124,
+  "id": "c8724884-b73f-44f5-ab02-019fe645060c",
+  "tarih": "09 Ağustos 2026 Pazar",
+  "durum": "Ham",
+  "kaynaklar": {
+    "metin_html": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/124/Ham/5c72c055-47c7-4ccd-8cc1-b426e5d8dbdf.html",
+    "pdf": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/124/Ham/b4078df4-de7b-4fb7-ae7e-7543526050bf.pdf",
+    "docx": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/124/Ham/441eefbd-c55e-4ad5-91bb-81791d473ff2.docx",
+    "ozet": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/124/Ozet/f687129c-3f6e-4bb2-8f3e-9efb4bff60ee.html",
+    "oylama": [
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/124/AcikOylamaSonuc/1fe7c0d3-b067-4ce1-a3a8-6e58e7c4d161.html"
+    ],
+    "tumu": [
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/124/Ham/441eefbd-c55e-4ad5-91bb-81791d473ff2.docx",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/124/Ham/5c72c055-47c7-4ccd-8cc1-b426e5d8dbdf.html",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/124/Ham/b4078df4-de7b-4fb7-ae7e-7543526050bf.pdf"
+    ]
+  },
+  "oylama_sayisi": 1,
+  "indirildi": "2026-10-10T23:03:19+03:00"
+}

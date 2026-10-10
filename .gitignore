@@ -1,0 +1,9 @@
+# Üretilen site (GitHub Actions her çalışmada yeniden üretir)
+site/
+# İsteğe bağlı orijinal PDF/DOCX/HTML indirmeleri
+orijinal/
+logs/
+__pycache__/
+*.tmp
+# Yerel Windows kısayolları (bilgisayara özel yollar içerir)
+calistir.bat
