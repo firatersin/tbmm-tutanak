@@ -9,6 +9,7 @@ yerelde site/index.html doğrudan açılabilir, GitHub Pages'te de aynen yayınl
 from __future__ import annotations
 
 import json
+import shutil
 import re
 from collections import Counter, OrderedDict
 from datetime import datetime, timedelta, timezone
@@ -18,6 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 DATA = ROOT / "data"
 OUT = ROOT / "site"
+STATIC = ROOT / "static"
 TR_TZ = timezone(timedelta(hours=3))
 
 UPPER = "A-ZÇĞİÖŞÜÂÎÛ"
@@ -400,11 +402,110 @@ function okundu(id){try{const o=okunanlar();o[id]=Date.now();localStorage.setIte
 """
 
 
+APP_HEAD = """<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#f7f5f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151412" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="favicon-32.png" sizes="32x32"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Meclis">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">"""
+
+APP_CSS = """
+#cevrimdisi{position:sticky;top:0;z-index:20;background:var(--ham-bg);color:var(--ink);font-size:13px;
+text-align:center;padding:6px 12px;border-bottom:1px solid var(--line)}
+"""
+
+# Uygulama katmanı: service worker kaydı, çevrimdışı bandı, yükleme düğmesi ve iOS ipucu
+APP_JS = """
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+function cevrim(){let b=document.getElementById('cevrimdisi');
+ if(!navigator.onLine){if(!b){b=document.createElement('div');b.id='cevrimdisi';
+  b.textContent='Çevrimdışısınız — kaydedilmiş kopya gösteriliyor';document.body.prepend(b)}}else if(b)b.remove()}
+addEventListener('online',cevrim);addEventListener('offline',cevrim);cevrim();
+(()=>{let olay=null;const kur=document.getElementById('kur');
+ addEventListener('beforeinstallprompt',e=>{e.preventDefault();olay=e;if(kur)kur.hidden=false});
+ addEventListener('appinstalled',()=>{if(kur)kur.hidden=true});
+ if(kur)kur.onclick=async()=>{if(!olay)return;olay.prompt();await olay.userChoice;olay=null;kur.hidden=true};
+ const ip=document.getElementById('ios-ipucu');if(!ip)return;
+ const kurulu=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+ const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ let gorulmus=false;try{gorulmus=!!localStorage.getItem('tbmm-ios-ipucu')}catch(e){}
+ if(ios&&!kurulu&&!gorulmus)ip.hidden=false;
+ ip.querySelector('button').onclick=()=>{ip.hidden=true;try{localStorage.setItem('tbmm-ios-ipucu','1')}catch(e){}}})();
+"""
+
+
 def page(title: str, css: str, body: str, js: str) -> str:
     return f"""<!doctype html><html lang="tr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{escape(title)}</title><style>{CSS}{css}</style></head><body>{body}
-<script>{READ_JS}{js}</script></body></html>"""
+<title>{escape(title)}</title>{APP_HEAD}<style>{CSS}{APP_CSS}{css}</style></head><body>{body}
+<script>{READ_JS}{APP_JS}{js}</script></body></html>"""
+
+
+MANIFEST = {
+    "name": "Meclis Tutanakları",
+    "short_name": "Meclis",
+    "description": "TBMM Genel Kurul tutanakları ve açık oylama sonuçları",
+    "lang": "tr",
+    "id": "./",
+    "start_url": "./",
+    "scope": "./",
+    "display": "standalone",
+    "background_color": "#f7f5f1",
+    "theme_color": "#f7f5f1",
+    "icons": [
+        {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+        {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+        {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
+    ],
+}
+
+# Sayfalar çevrimiçiyken her zaman güncel gelir (önce ağ); açılan sayfalar çevrimdışı okunmak üzere saklanır.
+SW_JS = """
+const SURUM='__SURUM__';
+const KABUK='tbmm-kabuk-'+SURUM, SAYFALAR='tbmm-sayfalar', EN_FAZLA=80, ZAMAN_ASIMI=5000;
+const KABUK_DOSYALARI=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png',
+ 'icon-maskable-512.png','apple-touch-icon.png','favicon-32.png'];
+
+self.addEventListener('install',e=>{e.waitUntil(caches.open(KABUK).then(c=>c.addAll(KABUK_DOSYALARI)).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(
+ ks.filter(k=>k.startsWith('tbmm-kabuk-')&&k!==KABUK).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
+
+async function kirp(){const c=await caches.open(SAYFALAR);const ks=await c.keys();
+ for(let i=0;i<ks.length-EN_FAZLA;i++)await c.delete(ks[i])}
+
+async function sayfa(req){
+ const c=await caches.open(SAYFALAR);
+ const ag=fetch(req).then(async r=>{if(r.ok){await c.delete(req,{ignoreSearch:true});await c.put(req,r.clone());kirp()}return r});
+ const kayitli=await c.match(req,{ignoreSearch:true})||await caches.match(req,{ignoreSearch:true});
+ if(!kayitli){try{return await ag}catch(e){return cevrimdisiSayfa()}}
+ // Ağ yavaşsa bekletmeden kaydedilmiş kopyayı göster
+ return Promise.race([ag.catch(()=>kayitli),new Promise(r=>setTimeout(()=>r(kayitli),ZAMAN_ASIMI))]);
+}
+
+function cevrimdisiSayfa(){return new Response(`<!doctype html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Çevrimdışı</title>
+<body style="font:16px system-ui;padding:40px 20px;text-align:center;color:#6b665e;background:#f7f5f1">
+<h1 style="font:28px Georgia,serif;color:#1d1b18">Çevrimdışısınız</h1>
+<p>Bu sayfa daha önce açılmadığı için kaydedilmemiş.</p><p><a href="./" style="color:#a3122a">Ana sayfaya dön</a></p>`,
+ {headers:{'Content-Type':'text/html; charset=utf-8'}})}
+
+self.addEventListener('fetch',e=>{const r=e.request;const u=new URL(r.url);
+ if(r.method!=='GET'||u.origin!==location.origin)return;
+ if(r.mode==='navigate'||u.pathname.endsWith('.html')||u.pathname.endsWith('/'))e.respondWith(sayfa(r));
+ else e.respondWith(caches.match(r,{ignoreSearch:true}).then(k=>k||fetch(r)));
+});
+
+// Bildirimler: gönderen taraf daha sonra eklenecek. Beklenen yük: {"title","body","url","tag"}
+self.addEventListener('push',e=>{let d={};try{d=e.data?e.data.json():{}}catch(_){d={body:e.data&&e.data.text()}}
+ e.waitUntil(self.registration.showNotification(d.title||'Meclis Tutanakları',{body:d.body||'',
+  icon:'icon-192.png',badge:'favicon-32.png',tag:d.tag,data:{url:d.url||'./'}}))});
+self.addEventListener('notificationclick',e=>{e.notification.close();
+ const hedef=new URL(e.notification.data&&e.notification.data.url||'./',self.registration.scope).href;
+ e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(ws=>{
+  for(const w of ws)if(w.url===hedef&&'focus' in w)return w.focus();
+  return self.clients.openWindow(hedef)}))});
+"""
 
 
 TOPBAR_CSS = """
@@ -477,6 +578,11 @@ def build_index(sessions: list[dict], votes: list[dict], updated: str) -> str:
     css = TOPBAR_CSS + """
 .wrap{max-width:860px;margin:0 auto;padding:32px 16px 64px}
 header h1{font-family:var(--serif);font-weight:normal;font-size:32px;margin:0 0 4px}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#kur{background:var(--accent);color:#fff;border-color:var(--accent);font-size:14px;white-space:nowrap}
+#ios-ipucu{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);
+border-radius:10px;padding:10px 14px;margin:0 0 16px;font-size:14px}
+#ios-ipucu span{flex:1}
 header p{color:var(--muted);margin:0 0 20px}
 .tools{display:flex;flex-direction:column;gap:10px;margin-bottom:8px}
 .tools .row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
@@ -495,8 +601,10 @@ padding:14px 18px;margin-bottom:10px;text-decoration:none;transition:border-colo
 @media (max-width:560px){.card{gap:12px;padding:12px 14px}}
 """
     body = f"""<div class="wrap">
-<header><h1>Meclis Tutanakları</h1>
+<header><div class="hrow"><h1>Meclis Tutanakları</h1><button id="kur" hidden>Uygulamayı yükle</button></div>
 <p>TBMM Genel Kurul · {len(sessions)} tutanak · {len(votes)} açık oylama · son güncelleme {escape(updated)}</p></header>
+<div id="ios-ipucu" hidden><span>Uygulama olarak kullanmak için Safari'de <b>Paylaş</b> düğmesine, sonra
+<b>Ana Ekrana Ekle</b>'ye dokunun.</span><button>Tamam</button></div>
 <div class="tools"><input type="search" id="q" placeholder="Konu, kanun teklifi, milletvekili, tarih, birleşim no…">
 <div class="row"><div class="chips" id="tur"><button class="on" data-v="">Tümü</button>
 <button data-v="tutanak">Tutanaklar</button><button data-v="oylama">Oylamalar</button></div>
@@ -873,8 +981,14 @@ def build() -> Path:
         if p.name not in written:
             p.unlink()
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
+    now = datetime.now(TR_TZ)
+    # Uygulama dosyaları: ikonlar, manifest ve service worker (sürüm her derlemede değişir ki güncellemeler yayılsın)
+    for icon in STATIC.glob("*.png"):
+        shutil.copy2(icon, OUT / icon.name)
+    (OUT / "manifest.webmanifest").write_text(json.dumps(MANIFEST, ensure_ascii=False, indent=1), encoding="utf-8")
+    (OUT / "sw.js").write_text(SW_JS.replace("__SURUM__", now.strftime("%Y%m%d%H%M%S")), encoding="utf-8")
     index = OUT / "index.html"
-    index.write_text(build_index(sessions, votes, datetime.now(TR_TZ).strftime("%d.%m.%Y %H:%M")), encoding="utf-8")
+    index.write_text(build_index(sessions, votes, now.strftime("%d.%m.%Y %H:%M")), encoding="utf-8")
     return index
 
 

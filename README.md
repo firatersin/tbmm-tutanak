@@ -15,6 +15,18 @@ dizen, sunucusuz bir okuma sitesi üretir.
 
 Python standart kütüphanesi ve PDF okumak için `pypdf` kullanılır (`pip install -r requirements.txt`).
 
+## Mobil uygulama
+
+Site, telefona uygulama olarak kurulabilir (PWA). Kendi ikonuyla tam ekran açılır, açılan sayfalar çevrimdışı
+okunabilir ve GitHub her yayın yaptığında kendiliğinden güncellenir.
+
+- **Android (Chrome):** Siteyi açın, ana sayfadaki **Uygulamayı yükle** düğmesine ya da menüdeki
+  **Uygulamayı yükle / Ana ekrana ekle**'ye dokunun.
+- **iPhone (Safari):** Siteyi açın, **Paylaş** düğmesine, ardından **Ana Ekrana Ekle**'ye dokunun.
+
+Service worker bildirim almaya hazırdır (yük: `{"title", "body", "url", "tag"}`); bildirim gönderen taraf henüz
+eklenmedi. İkonlar `tools/ikonlar.py` ile üretilir ve `static/` altında durur.
+
 ## GitHub üzerinde çalışma
 
 `.github/workflows/guncelle.yml` her gün Türkiye saatiyle 09:00 ve 21:00'de çalışır:
