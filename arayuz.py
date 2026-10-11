@@ -189,6 +189,180 @@ def sonuc_cls(sonuc: str) -> str:
     return "red" if ("edilme" in s or "redd" in s) else "ok" if s else "na"
 
 
+# ---------- Parti kırılımı (oy türü -> parti -> milletvekili) ----------
+
+PARTI_RENK = {
+    "AK Parti": "#f59e0b", "CHP": "#e53935", "MHP": "#8f2d2d", "DEM Parti": "#7e3fa0", "HDP": "#7e3fa0",
+    "YSP": "#7e3fa0", "İYİ Parti": "#29a9e0", "Yeni Yol": "#0f766e", "Yeni Parti": "#4f46e5",
+    "YRP": "#15803d", "HÜDA PAR": "#65a30d", "Saadet": "#be185d", "TİP": "#f472b6", "EMEP": "#c2410c",
+    "DBP": "#a78bfa", "DSP": "#2563eb", "DP": "#64748b", "DEVA": "#0891b2", "Gelecek": "#0d9488",
+    "Bağımsız": "#9ca3af",
+}
+YEDEK_RENK = ["#84cc16", "#06b6d4", "#d946ef", "#f97316", "#14b8a6", "#a3a3a3"]
+
+
+def kirilim_html(v: dict) -> str:
+    """Oy türü -> parti -> milletvekili kırılımı; çizimi KIRILIM_JS yapar."""
+    parties = [p for p, _ in party_table(v)]
+    idx = {p: i for i, p in enumerate(parties)}
+    colors = [PARTI_RENK.get(p, YEDEK_RENK[i % len(YEDEK_RENK)]) for i, p in enumerate(parties)]
+    rows: dict[str, list] = {}
+    for il, soyad, ad, parti, _sistem, _pusula, sonuc, _tarih, _saat in v["oylar"]:
+        rows.setdefault(oy_kodu(sonuc), []).append(
+            [idx[PARTI_KISA.get(parti, parti)], f"{tr_title(ad)} {soyad}", tr_title(il)])
+    for lst in rows.values():
+        lst.sort(key=lambda r: (r[0], r[1].split(" ")[-1], r[1]))
+    data = {"p": [[p, c] for p, c in zip(parties, colors)], "o": rows}
+    return f'<div class="kirilim" data-k="{escape(json.dumps(data, ensure_ascii=False, separators=(",", ":")))}"></div>'
+
+
+KIRILIM_CSS = """
+.kirilim{display:flex;flex-direction:column;gap:14px}
+.kr-row{display:grid;grid-template-columns:120px 1fr;gap:6px 12px;align-items:center}
+.kr-lbl{border:0;background:none;padding:2px 0;text-align:left;font-size:14px;white-space:nowrap}
+.kr-lbl b{font-variant-numeric:tabular-nums}.kr-lbl:hover,.kr-lbl.on{color:var(--accent)}
+.kr-bar{display:flex;height:22px;border-radius:5px;overflow:hidden;gap:1px;background:var(--line)}
+.kr-seg{border:0;border-radius:0;padding:0;min-width:3px;cursor:pointer;opacity:.92}
+.kr-seg:hover,.kr-seg.on{opacity:1;outline:2px solid var(--ink);outline-offset:-2px}
+.kr-chips{grid-column:2;display:flex;flex-wrap:wrap;gap:4px 6px}
+.kr-chip{font-size:12px;padding:1px 8px;border-radius:99px;display:inline-flex;align-items:center;gap:5px}
+.kr-chip i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.kr-chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.kr-row.x .kr-bar{opacity:.55}
+.kr-detail{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kr-dh{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.kr-dh b{font-size:15px}.kr-dh span{color:var(--muted);font-size:13px}
+.kr-dh input{max-width:240px;padding:5px 10px;margin-left:auto}.kr-dh button{padding:4px 10px;font-size:13px}
+.kr-names h5{margin:10px 0 4px;font-size:13px;display:flex;align-items:center;gap:6px}
+.kr-names h5 i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.kr-names ul{list-style:none;margin:0;padding:0;columns:3 200px;column-gap:18px;font-size:13px}
+.kr-names li{break-inside:avoid;padding:1px 0}.kr-names small{color:var(--muted)}
+@media (max-width:640px){.kr-row{grid-template-columns:1fr}.kr-chips{grid-column:1}}
+"""
+
+KIRILIM_JS = """
+const OYT=[['KABUL','Kabul','k'],['RET','Ret','r'],['ÇEKİMSER','Çekimser','c'],['KATILMADI','Katılmadı','x']];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function kirilim(el){
+ const d=JSON.parse(el.dataset.k),P=d.p;let h='';
+ for(const [code,lbl,cls] of OYT){const L=d.o[code]||[];if(!L.length)continue;
+  const by={};L.forEach(r=>(by[r[0]]=by[r[0]]||[]).push(r));
+  const ps=Object.keys(by).map(Number).sort((a,b)=>by[b].length-by[a].length);
+  h+=`<div class="kr-row ${cls}"><button class="kr-lbl" data-t="${code}" title="Bu oyu verenlerin hepsini göster"><span class="dot ${cls}"></span>${lbl} <b>${L.length}</b></button>`
+   +`<div class="kr-bar">${ps.map(p=>`<button class="kr-seg" data-t="${code}" data-p="${p}" style="flex:${by[p].length};background:${P[p][1]}" title="${esc(P[p][0])}: ${by[p].length}"></button>`).join('')}</div>`
+   +`<div class="kr-chips">${ps.map(p=>`<button class="kr-chip" data-t="${code}" data-p="${p}"><i style="background:${P[p][1]}"></i>${esc(P[p][0])} <b>${by[p].length}</b></button>`).join('')}</div></div>`}
+ h+='<div class="kr-detail" hidden></div>';el.innerHTML=h;
+ const det=el.querySelector('.kr-detail');let cur='';
+ function show(t,p){const key=t+'|'+p;
+  el.querySelectorAll('.on').forEach(x=>x.classList.remove('on'));
+  if(cur===key){cur='';det.hidden=true;return}cur=key;
+  el.querySelectorAll(p===''?`.kr-lbl[data-t="${t}"]`:`[data-t="${t}"][data-p="${p}"]`).forEach(x=>x.classList.add('on'));
+  const L=(d.o[t]||[]).filter(r=>p===''||r[0]===+p),lbl=OYT.find(o=>o[0]===t)[1];
+  const g={};L.forEach(r=>(g[r[0]]=g[r[0]]||[]).push(r));
+  det.innerHTML=`<div class="kr-dh"><b>${lbl}${p===''?'':' · '+esc(P[p][0])}</b><span>${L.length} milletvekili</span>`
+   +`<input type="search" placeholder="İsim veya il ara…"><button class="kr-x">Kapat</button></div><div class="kr-names">`
+   +Object.keys(g).map(Number).sort((a,b)=>g[b].length-g[a].length).map(k=>`<h5><i style="background:${P[k][1]}"></i>${esc(P[k][0])} (${g[k].length})</h5><ul>`
+     +g[k].map(r=>`<li data-q="${esc((r[1]+' '+r[2]).toLocaleLowerCase('tr'))}">${esc(r[1])} <small>${esc(r[2])}</small></li>`).join('')+'</ul>').join('')+'</div>';
+  det.hidden=false;
+  det.querySelector('.kr-x').onclick=()=>show(t,p);
+  det.querySelector('input').oninput=e=>{const q=e.target.value.toLocaleLowerCase('tr').trim();
+   det.querySelectorAll('li').forEach(li=>li.hidden=!!q&&!li.dataset.q.includes(q));
+   det.querySelectorAll('ul').forEach(u=>{u.previousElementSibling.hidden=u.hidden=![...u.children].some(li=>!li.hidden)})};
+  det.scrollIntoView({block:'nearest',behavior:'smooth'})}
+ el.querySelectorAll('.kr-lbl').forEach(b=>b.onclick=()=>show(b.dataset.t,''));
+ el.querySelectorAll('.kr-seg,.kr-chip').forEach(b=>b.onclick=()=>show(b.dataset.t,b.dataset.p));
+}
+document.querySelectorAll('.kirilim').forEach(kirilim);
+"""
+
+
+# ---------- Oylanan metnin resmi gerekçesi ("Bu oylama neyle ilgili?") ----------
+
+def sira_no(v: dict) -> str:
+    no = re.sub(r"\D", "", v.get("sira_sayisi") or "")
+    if not no:
+        m = re.search(r"S\.\s*Sayısı\s*:\s*(\d+)", v.get("baslik", ""))
+        no = m.group(1) if m else ""
+    return no
+
+
+def neyle_ilgili_html(v: dict, compact: bool = False) -> str:
+    ss = v.get("ss")
+    if not ss or ss.get("bulunamadi"):
+        return ""
+    no = ss["sira_sayisi"]
+    pdf = ss.get("pdf", "")
+    kaynak = (f'<a href="{escape(pdf)}" target="_blank" rel="noopener">S. Sayısı {escape(no)} komisyon raporu (PDF) ↗</a>'
+              if pdf else f"S. Sayısı {escape(no)}")
+    etiketler = []
+    esas = re.search(r"\((\d/\d+)\)", ss.get("baslik", ""))
+    if ss.get("kanun_no"):
+        etiketler.append(f'<span class="pill ok">Kanun No {escape(ss["kanun_no"])}</span>')
+    if esas:
+        etiketler.append(f'<span class="pill na">Esas No {escape(esas.group(1))}</span>')
+
+    if "buyuk_pdf_mb" in ss:
+        govde = (f'<p class="muted">Bu rapor çok büyük ({ss["buyuk_pdf_mb"]} MB, bütçe/kesin hesap gibi) olduğu için '
+                 'gerekçesi otomatik çıkarılmadı. Ayrıntılar raporda.</p>')
+        return (f'<section class="ilgili"><h2>Bu oylama neyle ilgili?</h2><div class="tags">{"".join(etiketler)}</div>'
+                f'{govde}<p class="kaynak">Kaynak: {kaynak}</p></section>') if not compact else ""
+
+    maddeler = ss.get("maddeler", [])
+    asil = [m for m in maddeler if not m["rutin"]]
+    rutin = [m for m in maddeler if m["rutin"]]
+    ana = ss.get("esaslar") or ss.get("amac") or [m["ilk"] for m in asil]
+    if not ana and not maddeler:
+        return ""
+
+    if compact:
+        lis = "".join(f"<li>{escape(x)}</li>" for x in ana[:4])
+        more = f'<li class="muted">… <a href="{v["page"]}">devamı oylama sayfasında</a></li>' if len(ana) > 4 else ""
+        return f'<div class="ilgili-k"><b>Neyle ilgili:</b><ul>{lis}{more}</ul></div>'
+
+    ana_html = "".join(f"<li>{escape(x)}</li>" for x in ana)
+    madde_html = ""
+    if asil:
+        items = "".join(
+            f'<li><details><summary><b>Madde {escape(m["no"])}</b> {escape(m["ilk"])}</summary>'
+            f'<p>{escape(m["metin"])}</p></details></li>' for m in asil)
+        rutin_not = (f'<p class="muted">Ayrıca {len(rutin)} rutin madde: '
+                     + ", ".join(f"Madde {escape(m['no'])}" for m in rutin) + " (tanımlar, yürürlük, yürütme).</p>") if rutin else ""
+        madde_html = (f'<details class="maddeler"><summary>Madde madde gerekçeler ({len(asil)} madde)</summary>'
+                      f'<ol>{items}</ol>{rutin_not}</details>')
+    genel = ss.get("genel_gerekce", "")
+    genel_html = ""
+    if genel:
+        cumleler = [c.strip() for c in SENT_SPLIT.split(genel) if c.strip()]
+        paras = [" ".join(cumleler[i:i + 3]) for i in range(0, len(cumleler), 3)]
+        genel_html = ('<details class="maddeler"><summary>Genel gerekçenin tamamı</summary>'
+                      + "".join(f"<p>{escape(p)}</p>" for p in paras) + "</details>")
+    return f"""<section class="ilgili"><h2>Bu oylama neyle ilgili?</h2>
+<div class="tags">{''.join(etiketler)}</div>
+<ul class="ana">{ana_html}</ul>
+{madde_html}{genel_html}
+<p class="kaynak">Kaynak: {kaynak}. Maddeler resmi gerekçeden değiştirilmeden alınmıştır. Gerekçe teklifin ilk
+hâline aittir; komisyonda veya Genel Kurulda yapılan değişiklikler yansımamış olabilir.</p></section>"""
+
+
+SENT_SPLIT = re.compile(r"(?<=[a-zçğıöşüâîû\)’'\.]\.)\s+(?=[A-ZÇĞİÖŞÜ\"“(])")
+
+ILGILI_CSS = """
+.ilgili{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:18px 0 6px}
+.ilgili h2{margin:0 0 8px!important}
+.ilgili .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.ilgili ul.ana{margin:8px 0 10px;padding-left:20px;font-family:var(--serif);font-size:16.5px;line-height:1.55}
+.ilgili ul.ana li{margin-bottom:8px}
+.ilgili details.maddeler{margin:8px 0;font-size:14px}
+.ilgili details.maddeler>summary{cursor:pointer;font-weight:600;color:var(--accent)}
+.ilgili ol{padding-left:4px;list-style:none;margin:8px 0}
+.ilgili ol li{margin-bottom:6px}.ilgili ol summary{cursor:pointer}
+.ilgili ol p,.ilgili details.maddeler>p{color:var(--muted);margin:6px 0 10px 14px;line-height:1.55}
+.ilgili .kaynak{font-size:12.5px;color:var(--muted);margin:10px 0 0}.ilgili .kaynak a{color:var(--accent)}
+.ilgili-k{font-size:14px;margin:6px 0 10px}.ilgili-k ul{margin:4px 0 0;padding-left:18px}
+.ilgili-k li{margin-bottom:4px}.ilgili-k a{color:var(--accent)}
+"""
+
+
 # ---------- Ortak şablon ----------
 
 CSS = """
@@ -410,10 +584,13 @@ def build_reader(s: dict, prev: dict | None, nxt: dict | None) -> str:
                       '</summary><ul>' + "".join(f"<li>{escape(d)}</li>" for d in s["decisions"]) + "</ul></details>")
     oy_html = ""
     if s["votes"]:
-        oy_html = (f'<details class="box" open><summary>Açık oylamalar ({len(s["votes"])})</summary><ul>'
-                   + "".join(f'<li><a href="{v["page"]}">{escape(v["baslik"])}</a> '
-                             f'<span class="pill {sonuc_cls(v["sonuc"])}">{escape(v["sonuc"] or "?")}</span></li>'
-                             for v in s["votes"]) + "</ul></details>")
+        items = "".join(
+            f'<div class="oyitem"><div class="oyh"><a href="{v["page"]}">{escape(v["baslik"])}</a> '
+            f'<span class="pill {sonuc_cls(v["sonuc"])}">{escape(v["sonuc"] or "?")}</span></div>'
+            f'{neyle_ilgili_html(v, compact=True)}{kirilim_html(v)}</div>'
+            for v in s["votes"])
+        oy_html = (f'<details class="box" open><summary>Açık oylamalar ({len(s["votes"])}) — '
+                   f'partilere ve milletvekillerine göre kırılım</summary>{items}</details>')
 
     nav_prev = f'<a href="{prev["page"]}">← {prev["birlesim"]}. Birleşim</a>' if prev else ""
     nav_next = f'<a href="{nxt["page"]}">{nxt["birlesim"]}. Birleşim →</a>' if nxt else ""
@@ -460,7 +637,10 @@ mark{background:var(--mark);color:inherit;border-radius:2px}mark.cur{outline:2px
 @media (max-width:900px){.layout{grid-template-columns:1fr;gap:0}
 aside{display:none;position:static;max-height:none;padding:8px 0}aside.open{display:block}
 #asideToggle{display:inline-block}.find{width:auto;flex:1}.home b{display:none}}
-"""
+.oyitem{padding:14px 0 6px;border-top:1px solid var(--line);margin-top:12px}
+.oyitem:first-of-type{border-top:0;margin-top:4px}
+.oyh{margin-bottom:6px;font-weight:600}
+""" + KIRILIM_CSS + ILGILI_CSS
     body = f"""<div class="top"><div class="bar-in">
 <a class="home" href="index.html">← <b>Tüm kayıtlar</b></a>
 <button id="asideToggle">İçindekiler</button>
@@ -517,7 +697,7 @@ document.getElementById('q').addEventListener('input',()=>{{clearTimeout(timer);
 document.getElementById('q').addEventListener('keydown',e=>{{if(e.key==='Enter'){{e.preventDefault();go(e.shiftKey?-1:1)}}}});
 document.getElementById('nextM').onclick=()=>go(1);document.getElementById('prevM').onclick=()=>go(-1);
 document.addEventListener('keydown',e=>{{if((e.ctrlKey||e.metaKey)&&e.key==='f'){{e.preventDefault();document.getElementById('q').focus();document.getElementById('q').select()}}}});
-"""
+""" + KIRILIM_JS
     return page(f"{s['birlesim']}. Birleşim · {s['tarih']}", css, body, js)
 
 
@@ -576,8 +756,9 @@ tbody th{font-weight:600}.num{text-align:right;font-variant-numeric:tabular-nums
 .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
 .filters input{max-width:320px}
 small{color:var(--muted)}
+.ipucu{font-size:13px;margin:-4px 0 12px}
 @media (max-width:640px){.barcell{display:none}.hide-sm{display:none}}
-"""
+""" + KIRILIM_CSS + ILGILI_CSS
     body = f"""<div class="top"><div class="bar-in"><a class="home" href="index.html">← <b>Tüm kayıtlar</b></a></div></div>
 <main>
 <div class="head"><div class="sub" style="margin:0 0 8px"><span class="pill oy">Açık oylama</span>
@@ -588,8 +769,13 @@ small{color:var(--muted)}
 <span>{v['donem']}. Dönem {v['yil']}. Yasama Yılı · {v['birlesim']}. Birleşim</span>
 {f"<span>Sıra sayısı {escape(v['sira_sayisi'])}</span>" if v['sira_sayisi'] else ''}</div>
 <div class="links">{''.join(links)}</div></div>
+{neyle_ilgili_html(v)}
+<h2>Oylama sonucu</h2>
 <div class="stats">{resmi_html}</div>
 <div class="bigbar">{bar(c, total)}<div class="legend">{''.join(f'<span><span class="dot {cls}"></span>{lbl} {c.get(code, 0)}</span>' for code, lbl, cls in OY_TURLERI)}</div></div>
+<h2>Oyların parti kırılımı</h2>
+<p class="muted ipucu">Bir parti dilimine tıklayınca o partiden o oyu veren milletvekilleri, oy türüne tıklayınca hepsi listelenir.</p>
+{kirilim_html(v)}
 <h2>Partilere göre</h2>
 <div class="scroll"><table><thead><tr><th>Parti</th>{head_cells}<th class="num">Üye</th><th class="barcell"></th></tr></thead>
 <tbody>{''.join(party_rows)}</tbody></table></div>
@@ -608,14 +794,23 @@ function f(){{const q=document.getElementById('q').value.toLocaleLowerCase('tr')
 document.getElementById('q').addEventListener('input',f);
 document.querySelectorAll('#oy button').forEach(b=>b.onclick=()=>{{oy=b.dataset.v;
  document.querySelectorAll('#oy button').forEach(x=>x.classList.toggle('on',x===b));f()}});f();
-"""
+""" + KIRILIM_JS
     return page(f"Oylama · {v['baslik'][:60]}", css, body, js)
 
 
 # ---------- Ana akış ----------
 
+def load_sira_sayilari() -> dict[tuple[int, str], dict]:
+    out = {}
+    for p in (DATA / "sira_sayilari").glob("donem*/*.json"):
+        rec = json.loads(p.read_text(encoding="utf-8"))
+        out[(rec["donem"], rec["sira_sayisi"])] = rec
+    return out
+
+
 def collect() -> tuple[list[dict], list[dict]]:
     sessions, votes = [], []
+    ss_all = load_sira_sayilari()
     for meta_path in DATA.glob("donem*/yil*/birlesim*/meta.json"):
         folder = meta_path.parent
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
@@ -650,6 +845,7 @@ def collect() -> tuple[list[dict], list[dict]]:
                     "page": f"{base}-o{v['no']}.html",
                     "read_id": f"{meta['key']}:oy{v['no']}",
                     "date": vd, "tarih_yazi": tarih_yazi(vd) if vd != datetime.min else meta["tarih"],
+                    "ss": ss_all.get((meta["donem"], sira_no(v))),
                 })
                 s["votes"].append(v)
                 votes.append(v)

@@ -6,10 +6,14 @@ dizen, sunucusuz bir okuma sitesi üretir.
 - **Tutanaklar:** Yeni birleşimler ve durum geçişleri (Ham → Tam → Basılmış) takip edilir. Kesin hâl
   yayınlandığında metin güncellenir.
 - **Açık oylamalar:** Her oylamanın sonucu, toplamları, parti bazında dağılımı ve milletvekili bazında oy dökümü.
+  Parti kırılımı grafiğinden partiye veya oy türüne tıklayınca ilgili milletvekilleri listelenir.
+- **Oylanan metnin resmi gerekçesi:** Oylanan teklifin komisyon raporu (sıra sayısı) bulunur. Gerekçesinden ana
+  başlıklar değiştirilmeden çıkarılır: genel gerekçedeki resmi liste ya da amaç cümleleri, madde madde gerekçeler
+  ve genel gerekçenin tamamı. Yapay zekâ özeti kullanılmaz.
 - **Okuma sitesi:** Tutanak ve oylamaları gün gün gösteren zaman çizelgesi, okunmamış işareti, arama. Tutanak
   sayfasında konuşmacıya atlama, içindekiler, özet ve alınan kararlar.
 
-Yalnızca Python standart kütüphanesi kullanılır; kurulacak paket yok.
+Python standart kütüphanesi ve PDF okumak için `pypdf` kullanılır (`pip install -r requirements.txt`).
 
 ## GitHub üzerinde çalışma
 
@@ -45,9 +49,13 @@ data/donem28/yil4/birlesim125/
   ozet.txt      tutanak özeti
   oylama.json   açık oylamalar: başlık, sonuç, toplamlar ve
                 oylar: [il, soyadı, adı, parti, sistem, pusula, sonuç, tarih, saat]
+data/sira_sayilari/donem28/290.json
+                oylanan teklifin komisyon raporu: PDF adresi, Kanun No, genel gerekçe,
+                resmi liste (esaslar), amaç cümleleri, madde gerekçeleri
 state.json      hangi birleşimin hangi durumda işlendiği
 ```
 
+100 MB'ı aşan raporların (bütçe, kesin hesap) gerekçesi çıkarılmaz; sitede rapora bağlantı verilir.
 PDF ve Word dosyaları repoya konmaz; site bunlar için TBMM'nin kendi bağlantılarını verir. Eski dönemlerin
 bazılarında (ör. 26. Dönem) tutanak metni yalnızca PDF olarak yayınlanmıştır. Bu birleşimlerde özet ve oylamalar
 yine işlenir, metin için PDF bağlantısı gösterilir.

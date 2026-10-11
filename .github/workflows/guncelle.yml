@@ -34,6 +34,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+
+      - name: Bağımlılıkları kur
+        run: pip install -r requirements.txt
 
       - name: TBMM'yi tara
         # Kod değişikliği push'larında tarama yapma, sadece siteyi yeniden üret

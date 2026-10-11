@@ -25,6 +25,7 @@ import logging
 import re
 import sys
 import time
+import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 from html.parser import HTMLParser
@@ -246,6 +247,210 @@ def parse_oylama(page: str) -> list[dict]:
     return votes
 
 
+# ---------- Sıra sayısı (komisyon raporu) ve gerekçeler ----------
+
+SS_DIR = DATA / "sira_sayilari"
+_ortak_donem: dict[int, str] = {}
+
+
+def ortak_donem_id(donem: int) -> str | None:
+    """Komisyon raporu sorgusunda dönemi temsil eden kimlik (sorgu formundaki seçeneklerden)."""
+    if not _ortak_donem:
+        t = get_text(f"{BASE}/yasama/komisyon-raporlari")
+        sel = re.search(r'name="OrtakDonemId".*?</select>', t, re.S)
+        for val, num in re.findall(r'<option value="([^"]+)">\s*(\d+)\s*</option>', sel.group(0) if sel else ""):
+            _ortak_donem[int(num)] = val.lower()
+    return _ortak_donem.get(donem)
+
+
+def find_sira_sayisi(donem: int, no: str) -> dict | None:
+    """Sıra sayısının komisyon raporu PDF'i, başlığı ve dağıtım tarihi."""
+    oid = ortak_donem_id(donem)
+    if not oid:
+        return None
+    q = urllib.parse.urlencode({"OrtakDonemId": oid, "SiraSayisiNumarasi": no, "draw": 1, "start": 0, "length": 10})
+    data = json.loads(get_text(f"{BASE}/Yasama/KomisyonRaporlari-Sonuc-Sayfa?{q}"))
+    for row in data.get("data", []):
+        m = re.search(r'href="([^"]+\.pdf)"[^>]*>\s*(\d+)\s*<', row.get("siraSayisi", ""))
+        if m and m.group(2) == str(no) and not row.get("siraSayiEki"):
+            baslik = clean(row.get("baslik", ""))
+            sonuc = re.search(r"Sonucu\s*:\s*([^:]+?)(?:\s+Kanun No\s*:|$)", baslik)
+            kanun = re.search(r"Kanun No\s*:\s*(\d+)", baslik)
+            return {"pdf": m.group(1), "dagitim": row.get("dagitimTarihi", ""),
+                    "baslik": re.split(r"\s+Sonucu\s*:", baslik)[0],
+                    "durum": sonuc.group(1).strip() if sonuc else "",
+                    "kanun_no": kanun.group(1) if kanun else ""}
+    return None
+
+
+MADDE_RE = re.compile(r"\n\s*((?:Geçici )?Madde \d+)\s*[-–‒]\s*")
+SENT_END = re.compile(r"(?<=[a-zçğıöşüâîû\)’'])\.(?=\s+[A-ZÇĞİÖŞÜ\"“(]|\s*$)")
+RUTIN_RE = re.compile(r"(tanımlar|Yürürlük maddesidir|Yürütme maddesidir|yürürlük tarihi|yürütme maddesi)", re.I)
+
+
+GEREKCE_RE = re.compile(r"\n\s*(?:GENEL )?GEREKÇE\s*\n")
+KANUN_METNI_RE = re.compile(r"\nMADDE 1\s*[-–‒]")
+SAYFA_BASLIGI_RE = re.compile(r"\n?\s*‒\s*\d+\s*‒\s*\n\s*Türkiye Büyük Millet Meclisi\s+\(Sıra Sayısı:[^)]*\)")
+MAX_PDF = 100 * 1024 * 1024  # bütçe/kesin hesap raporları 150 MB'ı aşabiliyor; onları atla
+SUNUS_RE = re.compile(r"\n\s*T\.\s?C\.\s*(?:\n\s*)?Cumhurbaşkanlığı|\n\s*TÜRKİYE BÜYÜK MİLLET MECLİSİ BAŞKANLIĞINA")
+AMAC_RE = re.compile(r"(amaçlan|hedeflen|öngörül|Anlaşma ile|Anlaşmayla|Teklif ile|Teklifle|düzenleme yapılmaktadır)")
+TR_HARFLER = "abcçdefgğhıijklmnoöprsştuüvyz"
+
+
+def _flat(s: str) -> str:
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def _first_sentence(s: str) -> str:
+    first = SENT_END.split(s, maxsplit=1)[0].strip()
+    return first if first.endswith(".") else first + "."
+
+
+def _numbered_list(raw: str) -> list[str]:
+    """Genel gerekçedeki '1. ... 2. ...' biçimli resmi listeyi (ör. anlaşmanın temel esasları) aynen çıkarır."""
+    starts = [(int(m.group(1)), m.start(), m.end()) for m in re.finditer(r"\n\s*(\d{1,2})[.)]\s+", raw)]
+    run = []
+    for num, s, e in starts:
+        if num == len(run) + 1:
+            run.append((s, e))
+        elif num == 1 and len(run) < 2:  # daha uzun bir liste yeniden başlıyorsa onu al
+            run = [(s, e)]
+    if len(run) < 2:
+        return []
+    items = []
+    for i, (s, e) in enumerate(run):
+        body = raw[e: run[i + 1][0]] if i + 1 < len(run) else raw[e:]
+        if i + 1 == len(run):  # son madde: noktalama + satır sonu + yeni cümleyle başlayan satırda dur
+            stop = re.search(r"[.;,]\s*\n(?=[A-ZÇĞİÖŞÜ][a-zçğıöşü’']+\s)", body)
+            body = body[: stop.start() + 1] if stop else body
+        items.append(_flat(body).rstrip(",;"))
+    return [x for x in items if 10 < len(x) < 1200]
+
+
+def _lettered_list(genel: str) -> list[str]:
+    """Metin içi 'a) ... b) ... c) ...' listesini (ör. 'Anlaşma ile; a) ..., b) ...') aynen çıkarır."""
+    marks = [(m.group(1), m.start(), m.end())
+             for m in re.finditer(rf"(?:^|[\s;:,(])([{TR_HARFLER}])\)\s+", genel)]
+    run = []
+    for letter, s, e in marks:
+        if letter == TR_HARFLER[len(run)]:
+            run.append((s, e))
+        elif letter == "a" and len(run) < 2:
+            run = [(s, e)]
+    if len(run) < 2:
+        return []
+    items = []
+    for i, (s, e) in enumerate(run):
+        body = genel[e: run[i + 1][0]] if i + 1 < len(run) else genel[e:]
+        if i + 1 == len(run):
+            body = _first_sentence(body)
+        items.append(re.sub(r"\s+(ile|ve)$", "", body.strip().rstrip(",;")))
+    return [x for x in items if 5 < len(x) < 800]
+
+
+def parse_gerekce(pdf_bytes: bytes) -> dict:
+    """Komisyon raporu PDF'inden genel gerekçe ve madde gerekçeleri (resmi metin, değiştirilmeden)."""
+    import io
+    from pypdf import PdfReader
+
+    reader = PdfReader(io.BytesIO(pdf_bytes))
+    text = ""
+    # Gerekçeler belgenin başında; tüm PDF'i (yüzlerce sayfa olabiliyor) okumamak için kanun metnine gelince dur
+    for i, page in enumerate(reader.pages):
+        text += "\n" + (page.extract_text() or "")
+        g = GEREKCE_RE.search(text)
+        if (g and KANUN_METNI_RE.search(text, g.end())) or i > 150:
+            break
+    text = SAYFA_BASLIGI_RE.sub("", text)
+    g = GEREKCE_RE.search(text)
+    if not g:
+        return {"genel_gerekce": "", "esaslar": [], "amac": [], "maddeler": []}
+    end = KANUN_METNI_RE.search(text, g.end())
+    body = text[g.end(): end.start() if end else len(text)]
+    # Kanun metninden önceki başlık satırlarını (ör. "... KANUN TEKLİFİ") ve komisyon raporu başlığını kes
+    body = re.split(r"\n[A-ZÇĞİÖŞÜ ,'’\-]{25,}\n", body)[0]
+    body = re.split(r"\n[^\n]{0,80}Komisyonu Raporu\s*\n", body)[0]
+
+    mg = body.find("MADDE GEREKÇELERİ")
+    genel_raw = body[:mg] if mg >= 0 else body
+    genel_raw = SUNUS_RE.split(genel_raw)[0]  # ardından gelen Cumhurbaşkanlığı sunuş yazısını kes
+    maddeler = []
+    if mg >= 0:
+        parts = MADDE_RE.split("\n" + body[mg + len("MADDE GEREKÇELERİ"):])
+        for label, mb in zip(parts[1::2], parts[2::2]):
+            mb = _flat(mb)
+            first = _first_sentence(mb)
+            maddeler.append({"no": label.replace("Madde ", ""), "ilk": first, "metin": mb,
+                             "rutin": bool(RUTIN_RE.search(first)) and len(first) < 120})
+    genel = _flat(genel_raw)
+    sentences = [s.strip() + "." for s in SENT_END.split(genel) if s.strip()]
+    # Liste yoksa: genel gerekçede amacı bildiren cümleler (aynen), o da yoksa ilk iki cümle
+    amac = [s for s in sentences if AMAC_RE.search(s) and len(s) < 700][:5] or sentences[:2]
+    return {
+        "genel_gerekce": genel,
+        "esaslar": _numbered_list(genel_raw) or _lettered_list(genel),
+        "amac": amac,
+        "maddeler": maddeler,
+    }
+
+
+def remote_size(url: str) -> int | None:
+    try:
+        req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": UA})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            n = r.headers.get("Content-Length")
+        return int(n) if n else None
+    except Exception:
+        return None
+
+
+def ss_path(donem: int, no: str) -> Path:
+    return SS_DIR / f"donem{donem}" / f"{no}.json"
+
+
+def ensure_sira_sayilari() -> int:
+    """Oylamalarda geçen ve henüz işlenmemiş sıra sayılarını indirip gerekçelerini çıkarır."""
+    needed = set()
+    for p in DATA.glob("donem*/yil*/birlesim*/oylama.json"):
+        donem = int(p.parts[-4].replace("donem", ""))
+        for v in json.loads(p.read_text(encoding="utf-8")):
+            no = re.sub(r"\D", "", v.get("sira_sayisi") or "")
+            if not no:
+                m = re.search(r"S\.\s*Sayısı\s*:\s*(\d+)", v.get("baslik", ""))
+                no = m.group(1) if m else ""
+            if no:
+                needed.add((donem, no))
+    done = 0
+    for donem, no in sorted(needed):
+        path = ss_path(donem, no)
+        if path.exists():
+            continue
+        try:
+            info = find_sira_sayisi(donem, no)
+            rec = {"donem": donem, "sira_sayisi": no, "bulunamadi": info is None}
+            if info:
+                rec.update(info)
+                size = remote_size(info["pdf"])
+                if size and size > MAX_PDF:
+                    rec["buyuk_pdf_mb"] = round(size / 1024 / 1024)
+                else:
+                    rec.update(parse_gerekce(get(info["pdf"])))
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+            if not info:
+                ozet = "bulunamadı"
+            elif "buyuk_pdf_mb" in rec:
+                ozet = f"PDF çok büyük ({rec['buyuk_pdf_mb']} MB), gerekçe çıkarılmadı"
+            else:
+                ozet = (f"{len(rec['maddeler'])} madde gerekçesi, {len(rec['esaslar'])} esas, "
+                        f"genel gerekçe {len(rec['genel_gerekce'])} karakter")
+            log.info("Sıra sayısı %d/%s: %s", donem, no, ozet)
+            done += 1
+        except Exception as e:
+            log.error("Sıra sayısı %d/%s işlenemedi: %s", donem, no, e)
+    return done
+
+
 def iso_dt(s: str) -> str:
     """'10.08.2026 16:45:41' -> '2026-08-10T16:45:41'"""
     m = re.match(r"(\d{1,2})\.(\d{1,2})\.(\d{4}) (\d{1,2}:\d{2}:\d{2})", s)
@@ -354,6 +559,10 @@ def run(args) -> int:
             except Exception as e:
                 errors += 1
                 log.exception("%s işlenemedi: %s", s["key"], e)
+    if not args.dry_run:
+        n = ensure_sira_sayilari()
+        if n:
+            log.info("%d sıra sayısı (komisyon raporu gerekçesi) işlendi", n)
     log.info("Bitti: %d birleşim kaydedildi/güncellendi, %d hata", changed, errors)
     if not args.dry_run and not args.arayuzsuz:
         try:
