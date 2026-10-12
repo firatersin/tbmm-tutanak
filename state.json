@@ -171,11 +171,12 @@
  "28-4-109": {
   "donem": 28,
   "dosyalar": [
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/109/Basilmis/fb859b4b-82e2-40fa-8f55-8e818ad33c45.pdf",
    "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/109/Tam/365b64ab-0630-4dea-bc0d-2948539246a7.docx",
    "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/109/Tam/e0d6e0e7-0f90-4242-85b9-8646a66f85b5.pdf",
    "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/109/Tam/ffe228da-c61b-4d9c-a109-8676519bfac4.html"
   ],
-  "durum": "Tam",
+  "durum": "Basılmış",
   "id": "f4f9bb04-bc79-4c5c-ac94-019f228c8760",
   "oylama_urls": [
    "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/109/AcikOylamaSonuc/3e537ceb-a8bb-4fcb-a559-ea1b2fcc1c34.html"
