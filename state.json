@@ -1961,5 +1961,19 @@
   "ozet_url": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/4/Ozet/7eb77611-f009-4a79-afa7-f1394eb71798.html",
   "tarih": "08 Ekim 2026 Perşembe",
   "yil": 5
+ },
+ "28-5-5": {
+  "donem": 28,
+  "dosyalar": [
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/5/Ham/b8c2d1d1-6375-453b-affc-6a8345bff2cc.docx",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/5/Ham/c73408a3-fd3a-4c0d-803a-a568d3ab7b05.html",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/5/Ham/dc055e8b-e212-44cf-83ac-89adbb953d6b.pdf"
+  ],
+  "durum": "Ham",
+  "id": "f82ee65d-ca62-4d88-a158-01a1353b90e0",
+  "oylama_urls": [],
+  "ozet_url": null,
+  "tarih": "13 Ekim 2026 Salı",
+  "yil": 5
  }
 }
