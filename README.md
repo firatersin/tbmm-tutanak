@@ -72,6 +72,42 @@ PDF ve Word dosyaları repoya konmaz; site bunlar için TBMM'nin kendi bağlant�
 bazılarında (ör. 26. Dönem) tutanak metni yalnızca PDF olarak yayınlanmıştır. Bu birleşimlerde özet ve oylamalar
 yine işlenir, metin için PDF bağlantısı gösterilir.
 
+## Güvenlik
+
+Repoda sır yoktur. `firebase-web.json` içindeki Firebase web anahtarı ve reCAPTCHA site anahtarı tasarım gereği
+herkese açıktır (sitenin kaynağında da görünür); koruma aşağıdaki kısıtlamalarla sağlanır.
+
+**Firebase / Google Cloud (meclis-ce5d2)**
+- API anahtarı yalnızca `firatersin.github.io` ve `meclis-ce5d2.firebaseapp.com`'dan, yalnızca Identity Toolkit,
+  Token Service, Firestore ve App Check API'leri için çalışır.
+- App Check (reCAPTCHA Enterprise) Firestore ve Authentication için **zorunlu**: istek gerçek siteden gelmiyorsa reddedilir.
+- Yetkili giriş alan adları: yalnızca site ve Firebase giriş sayfası (`localhost` kapalı; yerel geliştirmede
+  geçici olarak eklenip sonra kaldırılmalı).
+- Firestore kuralları (`firestore.rules`): yalnızca e-postası doğrulanmış ya da telefonla giriş yapmış kullanıcı,
+  yalnızca kendi iki belgesine erişir; listeleme kapalı; e-posta/telefon değiştirilemez; zaman damgaları sunucudan.
+- Firestore `eur3` (Avrupa), silme koruması açık. Faturalandırma kapalı (Spark): kötüye kullanım ücret doğuramaz.
+- E-posta numaralandırma koruması açık; SMS hiçbir ülkeye açık değil (telefon girişi kapalı).
+
+**GitHub**
+- İş akışında varsayılan yetki yok; tarama işi yalnızca `contents: write`, yayın işi yalnızca Pages yetkisi alır.
+- Eylemler commit kimliğine sabit; `pypdf` sürüm ve sağlama toplamıyla sabit; Dependabot haftalık günceller.
+- Yalnızca GitHub'ın kendi eylemleri çalışabilir; varsayılan iş akışı jetonu salt okunur.
+- Sır tarama ve push koruması açık; `main` silinemez ve zorla push edilemez.
+
+**Site**
+- Her sayfada İçerik Güvenliği Politikası: satır içi betikler SHA-256 özetiyle sabit, başka betik çalışmaz;
+  dış kaynak yalnızca giriş sayfasında (Firebase, reCAPTCHA).
+- Dış bağlantılar yalnızca `https://*.tbmm.gov.tr`; giriş sayfası başka sitenin çerçevesinde açılmaz.
+
+**Denetim ve testler** (`tools/guvenlik/`, proje sahibinin `firebase login` oturumuyla çalışır):
+```bash
+node tools/guvenlik/denetim.js                                  # ayarların salt okunur dökümü
+node tools/guvenlik/kural_testi.js firebase-web.json            # 19 senaryoluk Firestore kural testi
+node tools/guvenlik/appcheck_testi.js firebase-web.json         # App Check zorunluluğu testi
+node tools/guvenlik/temizle.js                                  # testlerden kalan her şeyi siler
+```
+Testler geçici `@example.com` hesapları ve geçici App Check belgeleri oluşturup sonunda siler.
+
 ## Kaynak
 
 Veriler [tbmm.gov.tr](https://www.tbmm.gov.tr/Tutanaklar/TutanakMetinleri) üzerinde kamuya açık olarak yayınlanan
