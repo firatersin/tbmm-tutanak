@@ -8,6 +8,8 @@ yerelde site/index.html doğrudan açılabilir, GitHub Pages'te de aynen yayınl
 """
 from __future__ import annotations
 
+import base64
+import hashlib
 import json
 import shutil
 import re
@@ -73,6 +75,11 @@ def tr_title(s: str) -> str:
 def slug(s: str) -> str:
     tr = str.maketrans("ÇĞİÖŞÜÂÎÛçğıöşüâîû", "CGIOSUAIUcgiosuaiu")
     return re.sub(r"[^a-z0-9]+", "-", s.translate(tr).lower()).strip("-")
+
+
+def guvenli_url(u: str | None) -> str:
+    """Dış bağlantılar yalnızca TBMM'nin https adreslerine gidebilir (ör. 'javascript:' bağlantıları elenir)."""
+    return u if u and re.match(r"^https://([a-z0-9-]+\.)*tbmm\.gov\.tr/", u) else ""
 
 
 def inline(s: str) -> str:
@@ -293,7 +300,7 @@ def neyle_ilgili_html(v: dict, compact: bool = False) -> str:
     if not ss or ss.get("bulunamadi"):
         return ""
     no = ss["sira_sayisi"]
-    pdf = ss.get("pdf", "")
+    pdf = guvenli_url(ss.get("pdf"))
     kaynak = (f'<a href="{escape(pdf)}" target="_blank" rel="noopener">S. Sayısı {escape(no)} komisyon raporu (PDF) ↗</a>'
               if pdf else f"S. Sayısı {escape(no)}")
     etiketler = []
@@ -435,11 +442,40 @@ addEventListener('online',cevrim);addEventListener('offline',cevrim);cevrim();
 """
 
 
-def page(title: str, css: str, body: str, js: str) -> str:
-    return f"""<!doctype html><html lang="tr"><head><meta charset="utf-8">
+FIREBASE_KAYNAK = {
+    "script": "https://www.gstatic.com/firebasejs/ https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/",
+    "connect": ("https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com "
+                "https://content-firebaseappcheck.googleapis.com https://www.google.com/recaptcha/"),
+    "frame": "https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ https://meclis-ce5d2.firebaseapp.com",
+}
+
+
+def csp(html: str, firebase: bool) -> str:
+    """Sayfadaki satır içi betiklerin SHA-256 özetleriyle İçerik Güvenliği Politikası; başka betik çalışmaz."""
+    ozetler = " ".join(
+        "'sha256-" + base64.b64encode(hashlib.sha256(s.encode("utf-8")).digest()).decode() + "'"
+        for s in re.findall(r"<script(?: type=\"module\")?>(.*?)</script>", html, re.S))
+    dis = FIREBASE_KAYNAK if firebase else {"script": "", "connect": "", "frame": ""}
+    kurallar = [
+        "default-src 'self'",
+        f"script-src 'self' {ozetler} {dis['script']}".strip(),
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data:",
+        f"connect-src 'self' {dis['connect']}".strip(),
+        f"frame-src {dis['frame'] or chr(39) + 'none' + chr(39)}",
+        "worker-src 'self'", "manifest-src 'self'",
+        "object-src 'none'", "base-uri 'none'", "form-action 'self'",
+    ]
+    return f'<meta http-equiv="Content-Security-Policy" content="{"; ".join(kurallar)}">'
+
+
+def page(title: str, css: str, body: str, js: str, firebase: bool = False) -> str:
+    html = f"""<!doctype html><html lang="tr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{escape(title)}</title>{APP_HEAD}<style>{CSS}{APP_CSS}{css}</style></head><body>{body}
+<meta name="referrer" content="strict-origin-when-cross-origin">
+__CSP__<title>{escape(title)}</title>{APP_HEAD}<style>{CSS}{APP_CSS}{css}</style></head><body>{body}
 <script>{READ_JS}{APP_JS}{js}</script></body></html>"""
+    return html.replace("__CSP__", csp(html, firebase), 1)
 
 
 MANIFEST = {
@@ -476,8 +512,10 @@ async function kirp(){const c=await caches.open(SAYFALAR);const ks=await c.keys(
 
 async function sayfa(req,ad=SAYFALAR){
  const c=await caches.open(ad);
- const ag=fetch(req).then(async r=>{if(r.ok){await c.delete(req,{ignoreSearch:true});await c.put(req,r.clone());if(ad===SAYFALAR)kirp()}return r});
- const kayitli=await c.match(req,{ignoreSearch:true})||await caches.match(req,{ignoreSearch:true});
+ // Önbellek anahtarında sorgu dizesi tutulmaz: giriş bağlantısındaki tek kullanımlık kod cihazda saklanmasın
+ const u=new URL(req.url),anahtar=u.origin+u.pathname;
+ const ag=fetch(req).then(async r=>{if(r.ok){await c.delete(anahtar);await c.put(anahtar,r.clone());if(ad===SAYFALAR)kirp()}return r});
+ const kayitli=await c.match(anahtar)||await caches.match(req,{ignoreSearch:true});
  if(!kayitli){try{return await ag}catch(e){return cevrimdisiSayfa()}}
  // Ağ yavaşsa bekletmeden kaydedilmiş kopyayı göster
  return Promise.race([ag.catch(()=>kayitli),new Promise(r=>setTimeout(()=>r(kayitli),ZAMAN_ASIMI))]);
@@ -679,7 +717,7 @@ def build_reader(s: dict, prev: dict | None, nxt: dict | None) -> str:
         front = ('<details class="front"><summary>Kapak, içindekiler ve ön bilgiler</summary>'
                  + "".join(f"<p>{escape(x)}</p>" for x in doc["front"]) + "</details>")
     if not s["has_text"]:
-        pdf = s["src"].get("pdf")
+        pdf = guvenli_url(s["src"].get("pdf"))
         front = ('<p class="bos">Bu dönemin tutanağı TBMM tarafından yalnızca PDF olarak yayınlanmış. '
                  + (f'<a href="{escape(pdf)}" target="_blank" rel="noopener">PDF\'i aç ↗</a>' if pdf else "") + "</p>")
 
@@ -688,7 +726,7 @@ def build_reader(s: dict, prev: dict | None, nxt: dict | None) -> str:
 
     links = [f'<a href="{escape(s["tbmm_url"])}" target="_blank" rel="noopener">TBMM sayfası ↗</a>']
     for key, label in (("pdf", "PDF ↗"), ("docx", "Word ↗")):
-        if s["src"].get(key):
+        if guvenli_url(s["src"].get(key)):
             links.append(f'<a href="{escape(s["src"][key])}" target="_blank" rel="noopener">{label}</a>')
 
     karar_html = ""
@@ -849,7 +887,9 @@ def build_vote(v: dict, s: dict) -> str:
         for code, lbl, cls in OY_TURLERI if c.get(code))
     head_cells = "".join(f"<th class='num'><span class='dot {cls}'></span>{lbl}</th>" for _, lbl, cls in OY_TURLERI)
 
-    links = [f'<a href="{escape(v["kaynak"])}" target="_blank" rel="noopener">TBMM oylama sayfası ↗</a>']
+    links = []
+    if guvenli_url(v.get("kaynak")):
+        links.append(f'<a href="{escape(v["kaynak"])}" target="_blank" rel="noopener">TBMM oylama sayfası ↗</a>')
     if s:
         links.insert(0, f'<a href="{s["page"]}">{v["birlesim"]}. Birleşim tutanağı</a>')
     saat = v["baslangic"][11:16] if v["baslangic"] else ""

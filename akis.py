@@ -280,14 +280,17 @@ hepsinin geçtiği kayıtlar gelir.</p>
     ayar = {
         "firebase": cfg and {k: cfg[k] for k in ("apiKey", "authDomain", "projectId", "appId") if k in cfg},
         "telefon": bool(cfg and cfg.get("telefon_girisi")),
+        "appcheck": cfg and cfg.get("appcheck_recaptcha_enterprise"),
         "surum": surum,
     }
     module = f"""<script>window.AYAR={json.dumps(ayar, ensure_ascii=False)};</script>
 <script type="module">{AKIS_JS.replace("__SDK__", FIREBASE_SDK)}</script>"""
-    return A.page("Akışım · Meclis Tutanakları", A.TOPBAR_CSS + AKIS_CSS, body + module, "")
+    return A.page("Akışım · Meclis Tutanakları", A.TOPBAR_CSS + AKIS_CSS, body + module, "", firebase=True)
 
 
 AKIS_JS = r"""
+// Başka bir sitenin çerçevesi içinde açılmayı reddet (tıklama hırsızlığına karşı)
+if (window.top !== window.self) { document.body.innerHTML = ''; window.top.location = location.href; throw new Error('çerçeve'); }
 const AY = window.AYAR, $ = id => document.getElementById(id);
 const goster = (...ids) => ['yukleniyor','kapali','giris','uygulama','ios-panel'].forEach(i => $(i).hidden = !ids.includes(i));
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -299,6 +302,11 @@ const { initializeApp } = await import(SDK + 'firebase-app.js');
 const AU = await import(SDK + 'firebase-auth.js');
 const FS = await import(SDK + 'firebase-firestore.js');
 const app = initializeApp(AY.firebase);
+// App Check: Firebase'e giden her isteğe, gerçekten bu siteden geldiğini kanıtlayan bir reCAPTCHA belgesi ekler
+if (AY.appcheck) {
+  const AC = await import(SDK + 'firebase-app-check.js');
+  AC.initializeAppCheck(app, { provider: new AC.ReCaptchaEnterpriseProvider(AY.appcheck), isTokenAutoRefreshEnabled: true });
+}
 const auth = AU.getAuth(app); auth.languageCode = 'tr';
 const db = FS.getFirestore(app);
 
@@ -569,7 +577,10 @@ document.querySelectorAll('.sekmeler button').forEach(b => b.onclick = () => {
 });
 
 // ---------- Hesap ----------
-$('cikis').onclick = () => AU.signOut(auth);
+$('cikis').onclick = async () => {
+  await AU.signOut(auth);
+  try { localStorage.removeItem(EPOSTA_KEY); } catch (_) {}
+};
 $('sil').onclick = async () => {
   const son = Date.parse(kullanici.metadata.lastSignInTime || 0);
   if (Date.now() - son > 5 * 60 * 1000) {

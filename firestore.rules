@@ -3,11 +3,20 @@ rules_version = '2';
 // Herkese açık içerik GitHub Pages'te; Firestore'da yalnızca kullanıcıya özel veriler var.
 // users/{uid}             profil ve takip listesi
 // users/{uid}/veri/okundu okundu işaretleri { ids: { "<kayıt>": zaman }, guncelleme }
+// Burada eşleşmeyen her yol (başka koleksiyonlar, listeleme) varsayılan olarak reddedilir.
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // E-postası doğrulanmış (e-posta bağlantısıyla girişte otomatik) ya da telefonla giriş yapmış kullanıcı.
+    // E-posta/şifre sağlayıcısı API üzerinden şifreli hesap açmaya izin verdiği için doğrulanmamış hesaplar dışarıda.
+    function dogrulanmis() {
+      return request.auth != null
+        && (request.auth.token.get('email_verified', false) == true
+            || request.auth.token.get('phone_number', null) != null);
+    }
+
     function sahibi(uid) {
-      return request.auth != null && request.auth.uid == uid;
+      return dogrulanmis() && request.auth.uid == uid;
     }
 
     function liste(t, ad, enFazla) {
@@ -20,25 +29,40 @@ service cloud.firestore {
         && liste(t, 'mv', 300) && liste(t, 'parti', 30) && liste(t, 'il', 81) && liste(t, 'kelime', 50);
     }
 
+    function metinYaDaBos(d, ad) {
+      return d.get(ad, null) == null || d[ad] is string;
+    }
+
     function gecerliKullanici(d) {
       return d.keys().hasOnly(['eposta', 'telefon', 'olusturma', 'guncelleme', 'takip'])
+        && metinYaDaBos(d, 'eposta') && metinYaDaBos(d, 'telefon')
         && (!('takip' in d) || gecerliTakip(d.takip));
     }
 
     match /users/{uid} {
-      allow read, delete: if sahibi(uid);
-      allow create: if sahibi(uid) && gecerliKullanici(request.resource.data)
-        // e-posta/telefon alanı, giriş yapılan kimlikle aynı olmalı
-        && request.resource.data.get('eposta', null) == request.auth.token.get('email', null);
-      allow update: if sahibi(uid) && gecerliKullanici(request.resource.data)
-        && request.resource.data.get('eposta', null) == resource.data.get('eposta', null)
-        && request.resource.data.get('olusturma', null) == resource.data.get('olusturma', null);
+      // Yalnızca tek belge okunabilir; koleksiyonu listelemek (başkalarının kayıtlarını görmek) kapalı
+      allow get, delete: if sahibi(uid);
+
+      // E-posta/telefon giriş kimliğiyle aynı olmalı; oluşturma zamanı sunucudan gelmeli
+      allow create: if sahibi(uid)
+        && gecerliKullanici(request.resource.data)
+        && request.resource.data.get('eposta', null) == request.auth.token.get('email', null)
+        && request.resource.data.get('telefon', null) == request.auth.token.get('phone_number', null)
+        && request.resource.data.olusturma == request.time
+        && !('guncelleme' in request.resource.data);
+
+      // Güncellemede yalnızca takip listesi değişebilir; e-posta, telefon ve oluşturma zamanı sabit
+      allow update: if sahibi(uid)
+        && gecerliKullanici(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['takip', 'guncelleme'])
+        && request.resource.data.guncelleme == request.time;
 
       match /veri/{belge} {
-        allow read, delete: if sahibi(uid);
+        allow get, delete: if sahibi(uid);
         allow create, update: if sahibi(uid) && belge == 'okundu'
           && request.resource.data.keys().hasOnly(['ids', 'guncelleme'])
-          && request.resource.data.ids is map && request.resource.data.ids.size() <= 20000;
+          && request.resource.data.ids is map && request.resource.data.ids.size() <= 20000
+          && request.resource.data.guncelleme == request.time;
       }
     }
   }

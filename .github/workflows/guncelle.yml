@@ -16,10 +16,8 @@ on:
   push:
     branches: [main]
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+# Varsayılan olarak hiçbir yetki yok; her iş yalnızca ihtiyaç duyduğunu alır
+permissions: {}
 
 concurrency:
   group: tbmm
@@ -28,16 +26,19 @@ concurrency:
 jobs:
   guncelle:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # yeni tutanakları repoya commit'lemek için
     steps:
-      - uses: actions/checkout@v4
+      # Eylemler değiştirilemez commit kimliklerine sabitlenmiştir (Dependabot günceller)
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: "3.12"
           cache: pip
 
-      - name: Bağımlılıkları kur
-        run: pip install -r requirements.txt
+      - name: Bağımlılıkları kur (sürüm ve sağlama toplamı sabit)
+        run: pip install --require-hashes -r requirements.txt
 
       - name: TBMM'yi tara
         # Kod değişikliği push'larında tarama yapma, sadece siteyi yeniden üret
@@ -46,7 +47,11 @@ jobs:
           DONEM: ${{ inputs.donem }}
           YIL: ${{ inputs.yil }}
         run: |
-          if [ -n "$DONEM" ] && [ -n "$YIL" ]; then
+          if [ -n "$DONEM" ] || [ -n "$YIL" ]; then
+            if ! [[ "$DONEM" =~ ^[0-9]{1,2}$ && "$YIL" =~ ^[0-9]$ ]]; then
+              echo "Dönem 1-2 haneli, yasama yılı tek haneli bir sayı olmalı." >&2
+              exit 1
+            fi
             python tbmm_tutanak.py --arayuzsuz --donem "$DONEM" --yil "$YIL"
           else
             python tbmm_tutanak.py --arayuzsuz
@@ -68,16 +73,19 @@ jobs:
       - name: Siteyi üret
         run: python arayuz.py
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9  # v5.0.0
         with:
           path: site
 
   yayinla:
     needs: guncelle
     runs-on: ubuntu-latest
+    permissions:
+      pages: write     # GitHub Pages'e yayınlamak için
+      id-token: write  # Pages dağıtımının kimlik doğrulaması için
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346  # v5.0.1

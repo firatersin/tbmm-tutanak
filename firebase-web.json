@@ -5,5 +5,6 @@
   "storageBucket": "meclis-ce5d2.firebasestorage.app",
   "messagingSenderId": "683559903563",
   "appId": "1:683559903563:web:6efd0eea408082b96188ce",
-  "telefon_girisi": false
+  "telefon_girisi": false,
+  "appcheck_recaptcha_enterprise": "6LflV-8tAAAAAInnjtJuFxUe0pAti2z3h6kErMiW"
 }

@@ -11,3 +11,14 @@ calistir.bat
 # Firebase CLI
 firebase-debug.log
 .firebase/
+
+# Sırların yanlışlıkla eklenmesine karşı
+.env
+.env.*
+*.pem
+*.key
+*-adminsdk-*.json
+service-account*.json
+serviceAccount*.json
+credentials*.json
+*.log
