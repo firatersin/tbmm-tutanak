@@ -1,0 +1,45 @@
+rules_version = '2';
+
+// Herkese açık içerik GitHub Pages'te; Firestore'da yalnızca kullanıcıya özel veriler var.
+// users/{uid}             profil ve takip listesi
+// users/{uid}/veri/okundu okundu işaretleri { ids: { "<kayıt>": zaman }, guncelleme }
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function sahibi(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function liste(t, ad, enFazla) {
+      return !(ad in t) || (t[ad] is list && t[ad].size() <= enFazla);
+    }
+
+    function gecerliTakip(t) {
+      return t is map
+        && t.keys().hasOnly(['mv', 'parti', 'il', 'kelime'])
+        && liste(t, 'mv', 300) && liste(t, 'parti', 30) && liste(t, 'il', 81) && liste(t, 'kelime', 50);
+    }
+
+    function gecerliKullanici(d) {
+      return d.keys().hasOnly(['eposta', 'telefon', 'olusturma', 'guncelleme', 'takip'])
+        && (!('takip' in d) || gecerliTakip(d.takip));
+    }
+
+    match /users/{uid} {
+      allow read, delete: if sahibi(uid);
+      allow create: if sahibi(uid) && gecerliKullanici(request.resource.data)
+        // e-posta/telefon alanı, giriş yapılan kimlikle aynı olmalı
+        && request.resource.data.get('eposta', null) == request.auth.token.get('email', null);
+      allow update: if sahibi(uid) && gecerliKullanici(request.resource.data)
+        && request.resource.data.get('eposta', null) == resource.data.get('eposta', null)
+        && request.resource.data.get('olusturma', null) == resource.data.get('olusturma', null);
+
+      match /veri/{belge} {
+        allow read, delete: if sahibi(uid);
+        allow create, update: if sahibi(uid) && belge == 'okundu'
+          && request.resource.data.keys().hasOnly(['ids', 'guncelleme'])
+          && request.resource.data.ids is map && request.resource.data.ids.size() <= 20000;
+      }
+    }
+  }
+}

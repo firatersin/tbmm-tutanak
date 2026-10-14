@@ -474,9 +474,9 @@ self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.
 async function kirp(){const c=await caches.open(SAYFALAR);const ks=await c.keys();
  for(let i=0;i<ks.length-EN_FAZLA;i++)await c.delete(ks[i])}
 
-async function sayfa(req){
- const c=await caches.open(SAYFALAR);
- const ag=fetch(req).then(async r=>{if(r.ok){await c.delete(req,{ignoreSearch:true});await c.put(req,r.clone());kirp()}return r});
+async function sayfa(req,ad=SAYFALAR){
+ const c=await caches.open(ad);
+ const ag=fetch(req).then(async r=>{if(r.ok){await c.delete(req,{ignoreSearch:true});await c.put(req,r.clone());if(ad===SAYFALAR)kirp()}return r});
  const kayitli=await c.match(req,{ignoreSearch:true})||await caches.match(req,{ignoreSearch:true});
  if(!kayitli){try{return await ag}catch(e){return cevrimdisiSayfa()}}
  // Ağ yavaşsa bekletmeden kaydedilmiş kopyayı göster
@@ -493,6 +493,7 @@ function cevrimdisiSayfa(){return new Response(`<!doctype html><meta charset="ut
 self.addEventListener('fetch',e=>{const r=e.request;const u=new URL(r.url);
  if(r.method!=='GET'||u.origin!==location.origin)return;
  if(r.mode==='navigate'||u.pathname.endsWith('.html')||u.pathname.endsWith('/'))e.respondWith(sayfa(r));
+ else if(u.pathname.endsWith('.json'))e.respondWith(sayfa(r,'tbmm-veri'));
  else e.respondWith(caches.match(r,{ignoreSearch:true}).then(k=>k||fetch(r)));
 });
 
@@ -580,6 +581,9 @@ def build_index(sessions: list[dict], votes: list[dict], updated: str) -> str:
 header h1{font-family:var(--serif);font-weight:normal;font-size:32px;margin:0 0 4px}
 .hrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
 #kur{background:var(--accent);color:#fff;border-color:var(--accent);font-size:14px;white-space:nowrap}
+.hbtn{display:flex;gap:8px;align-items:center}
+.akislink{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 12px;font-size:14px;
+text-decoration:none;white-space:nowrap}.akislink:hover{border-color:var(--accent);color:var(--accent)}
 #ios-ipucu{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);
 border-radius:10px;padding:10px 14px;margin:0 0 16px;font-size:14px}
 #ios-ipucu span{flex:1}
@@ -601,7 +605,8 @@ padding:14px 18px;margin-bottom:10px;text-decoration:none;transition:border-colo
 @media (max-width:560px){.card{gap:12px;padding:12px 14px}}
 """
     body = f"""<div class="wrap">
-<header><div class="hrow"><h1>Meclis Tutanakları</h1><button id="kur" hidden>Uygulamayı yükle</button></div>
+<header><div class="hrow"><h1>Meclis Tutanakları</h1><div class="hbtn"><button id="kur" hidden>Uygulamayı yükle</button>
+<a class="akislink" href="akis.html">Akışım</a></div></div>
 <p>TBMM Genel Kurul · {len(sessions)} tutanak · {len(votes)} açık oylama · son güncelleme {escape(updated)}</p></header>
 <div id="ios-ipucu" hidden><span>Uygulama olarak kullanmak için Safari'de <b>Paylaş</b> düğmesine, sonra
 <b>Ana Ekrana Ekle</b>'ye dokunun.</span><button>Tamam</button></div>
@@ -786,6 +791,8 @@ document.querySelectorAll('.sp').forEach(b=>b.onclick=()=>{{showText();
  document.querySelectorAll('.sp').forEach(x=>x.classList.toggle('on',x===b));
  b.querySelector('em').textContent=(pos[b.dataset.s]+1)+'/'+list.length;flash(el)}});
 function flash(el){{el.scrollIntoView({{block:'center',behavior:'smooth'}});el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),1600)}}
+// Akıştan gelen bağlantı: #konusmaci=<id> ilgili milletvekilinin ilk konuşmasına götürür
+{{const m=location.hash.match(/konusmaci=([\\w-]+)/);const b=m&&document.querySelector('.sp[data-s="'+m[1]+'"]');if(b)setTimeout(()=>b.click(),300)}}
 let marks=[],cur=-1,timer;
 function clearMarks(){{marks.forEach(m=>{{const p=m.parentNode;p.replaceChild(document.createTextNode(m.textContent),m);p.normalize()}});marks=[];cur=-1}}
 const norm=s=>s.toLocaleLowerCase('tr');
@@ -932,7 +939,7 @@ def collect() -> tuple[list[dict], list[dict]]:
         opening = next((ln.strip() for ln in ozet.split("\n") if ln.startswith("TBMM Genel Kurulu")), "")
         date = parse_date(meta["tarih"]) or datetime.min
         s = {
-            **meta, "page": f"{base}.html", "doc": doc, "ozet": ozet, "has_text": txt.exists(),
+            **meta, "page": f"{base}.html", "doc": doc, "ozet": ozet, "has_text": txt.exists(), "txt": txt,
             "src": meta.get("kaynaklar", {}),
             "read_id": f"{meta['key']}:{durum_kodu(meta['durum'])}",
             "tbmm_url": f"https://www.tbmm.gov.tr/Tutanaklar/Tutanak?Id={meta['id']}",
@@ -977,6 +984,8 @@ def build() -> Path:
         s = by_key.get(f"{v['donem']}-{v['yil']}-{v['birlesim']}")
         (OUT / v["page"]).write_text(build_vote(v, s), encoding="utf-8")
         written.add(v["page"])
+    import akis  # akis arayuz'u içe aktarıyor; döngü olmasın diye burada
+    written.update(akis.build(sessions, votes, OUT))
     for p in OUT.glob("*.html"):  # artık var olmayan eski sayfaları temizle
         if p.name not in written:
             p.unlink()
