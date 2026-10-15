@@ -1990,5 +1990,19 @@
   "ozet_url": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/6/Ozet/a2209023-f004-4f8c-81ca-34c1923cb3a6.html",
   "tarih": "14 Ekim 2026 Çarşamba",
   "yil": 5
+ },
+ "28-5-7": {
+  "donem": 28,
+  "dosyalar": [
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Ham/98222132-8f92-418d-bdd9-d73207289b8e.html",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Ham/9b1cee97-9991-43cf-bea9-aaf70da6b40c.docx",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Ham/ecc9ac87-bf61-4709-84e7-b9a1f7096b5e.pdf"
+  ],
+  "durum": "Ham",
+  "id": "0fbb96c6-b5c4-45d3-bffc-01a13f51edd4",
+  "oylama_urls": [],
+  "ozet_url": null,
+  "tarih": "15 Ekim 2026 Perşembe",
+  "yil": 5
  }
 }
