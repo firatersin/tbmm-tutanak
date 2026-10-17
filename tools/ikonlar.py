@@ -13,8 +13,8 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "static"
 FONT = "C:/Windows/Fonts/georgiab.ttf"
-BG = (163, 18, 42)       # --accent
-FG = (255, 255, 255)
+BG = (30, 82, 96)        # --vurgu (petrol)
+FG = (247, 242, 232)    # --kagit
 SS = 4                   # kenar yumuşatma için büyük çizip küçült
 
 

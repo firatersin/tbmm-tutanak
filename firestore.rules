@@ -25,8 +25,18 @@ service cloud.firestore {
 
     function gecerliTakip(t) {
       return t is map
-        && t.keys().hasOnly(['mv', 'parti', 'il', 'kelime'])
-        && liste(t, 'mv', 300) && liste(t, 'parti', 30) && liste(t, 'il', 81) && liste(t, 'kelime', 50);
+        && t.keys().hasOnly(['mv', 'parti', 'iller', 'kelime', 'konular'])
+        && liste(t, 'mv', 300) && liste(t, 'parti', 30) && liste(t, 'iller', 81)
+        && liste(t, 'kelime', 50) && liste(t, 'konular', 20);
+    }
+
+    // Bildirim planı: bilgi türleri, sıklık ve sessiz saatler
+    function gecerliTercih(p) {
+      return p is map
+        && p.keys().hasOnly(['turler', 'ritim', 'sessiz'])
+        && (!('ritim' in p) || p.ritim in ['yakindan', 'gunluk', 'haftalik'])
+        && (!('turler' in p) || (p.turler is map && p.turler.keys().hasOnly(['oylama', 'ozet', 'konusma', 'teklif'])))
+        && (!('sessiz' in p) || (p.sessiz is map && p.sessiz.keys().hasOnly(['bas', 'bit'])));
     }
 
     function metinYaDaBos(d, ad) {
@@ -34,9 +44,16 @@ service cloud.firestore {
     }
 
     function gecerliKullanici(d) {
-      return d.keys().hasOnly(['eposta', 'telefon', 'olusturma', 'guncelleme', 'takip'])
+      return d.keys().hasOnly(['eposta', 'telefon', 'olusturma', 'guncelleme', 'takip', 'tercih', 'riza'])
         && metinYaDaBos(d, 'eposta') && metinYaDaBos(d, 'telefon')
-        && (!('takip' in d) || gecerliTakip(d.takip));
+        && (!('takip' in d) || gecerliTakip(d.takip))
+        && (!('tercih' in d) || gecerliTercih(d.tercih));
+    }
+
+    // Açık rıza kaydı: hangi metne, ne zaman (sunucu saati) verildiği
+    function gecerliRiza(r) {
+      return r is map && r.keys().hasOnly(['metin', 'zaman']) && r.metin is string && r.metin.size() <= 60
+        && r.zaman == request.time;
     }
 
     match /users/{uid} {
@@ -49,12 +66,14 @@ service cloud.firestore {
         && request.resource.data.get('eposta', null) == request.auth.token.get('email', null)
         && request.resource.data.get('telefon', null) == request.auth.token.get('phone_number', null)
         && request.resource.data.olusturma == request.time
-        && !('guncelleme' in request.resource.data);
+        && !('guncelleme' in request.resource.data)
+        // Takip listesi sunucuya ancak açık rızayla gelir: oluştururken rıza kaydı zorunlu
+        && gecerliRiza(request.resource.data.riza);
 
-      // Güncellemede yalnızca takip listesi değişebilir; e-posta, telefon ve oluşturma zamanı sabit
+      // Güncellemede yalnızca takip listesi ve bildirim planı değişebilir; e-posta, telefon, oluşturma zamanı ve rıza sabit
       allow update: if sahibi(uid)
         && gecerliKullanici(request.resource.data)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['takip', 'guncelleme'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['takip', 'tercih', 'guncelleme'])
         && request.resource.data.guncelleme == request.time;
 
       match /veri/{belge} {

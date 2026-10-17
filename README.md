@@ -10,8 +10,14 @@ dizen, sunucusuz bir okuma sitesi üretir.
 - **Oylanan metnin resmi gerekçesi:** Oylanan teklifin komisyon raporu (sıra sayısı) bulunur. Gerekçesinden ana
   başlıklar değiştirilmeden çıkarılır: genel gerekçedeki resmi liste ya da amaç cümleleri, madde madde gerekçeler
   ve genel gerekçenin tamamı. Yapay zekâ özeti kullanılmaz.
-- **Okuma sitesi:** Tutanak ve oylamaları gün gün gösteren zaman çizelgesi, okunmamış işareti, arama. Tutanak
-  sayfasında konuşmacıya atlama, içindekiler, özet ve alınan kararlar.
+- **Uygulama:** Telefona kurulabilen, beş sekmeli bir okuma uygulaması (Akış, Oturumlar, Oylamalar, Ara, Takip).
+  İlk açılışta il, milletvekili/parti, konu ve bilgi türü/sıklık soran, her adımı atlanabilen bir karşılama akışı;
+  yanıtlar yalnızca cihazda saklanır ve kişisel akışı (her kaydın altında "neden görüyorum" ile) belirler.
+  Milletvekili, parti ve il sayfaları; tam metin arama; tutanak okuyucusunda içindekiler, konuşmacıya atlama,
+  metinde arama ve yazı boyutu.
+- **Tasarım:** Kâğıt-mürekkep teması ve tek bir petrol vurgusu (hiçbir partiyle ilişkili değil), Newsreader ve
+  IBM Plex Sans (kendi sunucumuzdan), oylar renk körlüğüne uygun mavi/kızıl ve ✓ ✕ – · işaretleriyle. Kaynaklar:
+  `web/` (biçem, betikler, yazı tipleri), `sablon.py` (iskelet), `sayfalar.py` (sayfalar), `akis.py` (veri dosyaları).
 
 Python standart kütüphanesi ve PDF okumak için `pypdf` kullanılır (`pip install -r requirements.txt`).
 
