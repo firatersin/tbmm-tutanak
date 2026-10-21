@@ -1938,11 +1938,11 @@
  "28-5-3": {
   "donem": 28,
   "dosyalar": [
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/3/Ham/05c0a763-4063-4dee-ae58-38887096ddbb.docx",
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/3/Ham/0c9a0b1f-c74d-4d17-9009-c374aef76ca7.html",
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/3/Ham/12c131a3-7706-47eb-8d68-7ee686a86e76.pdf"
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/3/Tam/088947ec-ae38-4de3-9025-9b5c748d777f.html",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/3/Tam/7932ebf9-195d-46cc-b709-8774e831cfc4.docx",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/3/Tam/d1792b97-c36c-4424-be7c-c7b9cf345adf.pdf"
   ],
-  "durum": "Ham",
+  "durum": "Tam",
   "id": "0bec7885-82af-443e-9934-01a116385beb",
   "oylama_urls": [],
   "ozet_url": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/3/Ozet/b749992e-fb8b-44ef-afd3-4a0522a593f1.html",
