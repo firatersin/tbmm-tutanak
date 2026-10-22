@@ -1921,6 +1921,20 @@
   "tarih": "01 Ekim 2026 Perşembe",
   "yil": 5
  },
+ "28-5-10": {
+  "donem": 28,
+  "dosyalar": [
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/10/Ham/77c128a0-5ee5-43e4-a670-978be8071042.html",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/10/Ham/cc885029-292e-48e2-bfcf-7740f995612a.pdf",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/10/Ham/f8ff72b7-a2d4-4c24-b774-199fca7e6086.docx"
+  ],
+  "durum": "Ham",
+  "id": "d504e53f-0cd5-4cb5-9ccc-01a163618eef",
+  "oylama_urls": [],
+  "ozet_url": null,
+  "tarih": "22 Ekim 2026 Perşembe",
+  "yil": 5
+ },
  "28-5-2": {
   "donem": 28,
   "dosyalar": [
