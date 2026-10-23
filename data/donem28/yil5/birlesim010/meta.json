@@ -10,7 +10,7 @@
     "metin_html": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/10/Ham/77c128a0-5ee5-43e4-a670-978be8071042.html",
     "pdf": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/10/Ham/cc885029-292e-48e2-bfcf-7740f995612a.pdf",
     "docx": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/10/Ham/f8ff72b7-a2d4-4c24-b774-199fca7e6086.docx",
-    "ozet": null,
+    "ozet": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/10/Ozet/71dc404e-93b4-4ccc-bc02-124b9910ccaf.html",
     "oylama": [],
     "tumu": [
       "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/10/Ham/77c128a0-5ee5-43e4-a670-978be8071042.html",
@@ -19,5 +19,5 @@
     ]
   },
   "oylama_sayisi": 0,
-  "indirildi": "2026-10-22T23:57:29+03:00"
+  "indirildi": "2026-10-23T13:57:37+03:00"
 }
