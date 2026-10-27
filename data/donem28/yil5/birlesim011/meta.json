@@ -1,0 +1,23 @@
+{
+  "key": "28-5-11",
+  "donem": 28,
+  "yil": 5,
+  "birlesim": 11,
+  "id": "391a2da5-79ee-47b1-a017-01a17d4b14a6",
+  "tarih": "27 Ekim 2026 Salı",
+  "durum": "Ham",
+  "kaynaklar": {
+    "metin_html": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/11/Ham/aef5418d-0a0a-4b7d-9f0a-67633913c2e9.html",
+    "pdf": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/11/Ham/4c742d23-bbe5-46de-91b9-bd744e56cb19.pdf",
+    "docx": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/11/Ham/49a0c589-e70f-4062-9857-34f4b0eec6c6.docx",
+    "ozet": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/11/Ozet/937c384e-6274-4973-b472-802758057565.html",
+    "oylama": [],
+    "tumu": [
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/11/Ham/49a0c589-e70f-4062-9857-34f4b0eec6c6.docx",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/11/Ham/4c742d23-bbe5-46de-91b9-bd744e56cb19.pdf",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/11/Ham/aef5418d-0a0a-4b7d-9f0a-67633913c2e9.html"
+    ]
+  },
+  "oylama_sayisi": 0,
+  "indirildi": "2026-10-28T00:33:52+03:00"
+}
