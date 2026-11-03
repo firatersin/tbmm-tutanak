@@ -348,11 +348,12 @@
  "28-4-119": {
   "donem": 28,
   "dosyalar": [
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/119/Tam/3728d56c-e3e3-402e-b27b-c999bf8deccc.html",
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/119/Tam/390458f9-80cb-46f4-968c-0fd927d4e477.docx",
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/119/Tam/ec8ac310-5ab8-4d4c-88d7-ddd3fc701f22.pdf"
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/119/Basilmis/a95910dc-77aa-4fda-a4eb-0af46af3fed7.pdf",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/119/Tam/0f8b8530-d39b-4b13-ad23-232c0a9119c2.docx",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/119/Tam/b471e462-c503-4a1d-b34d-a565d7f30974.html",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/119/Tam/deaaefef-d5cb-4c69-a80c-e7940fff2b15.pdf"
   ],
-  "durum": "Tam",
+  "durum": "Basılmış",
   "id": "49b8f2b4-380f-4d6a-baff-019fd12cc08b",
   "oylama_urls": [],
   "ozet_url": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/119/Ozet/98f45784-d880-4319-93b6-721226f5b780.html",
@@ -377,11 +378,12 @@
  "28-4-120": {
   "donem": 28,
   "dosyalar": [
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/120/Basilmis/c99bcb9b-3946-4019-a407-e7d7cca6cf1c.pdf",
    "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/120/Tam/3f285152-5965-4102-b0c6-873be6735590.pdf",
    "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/120/Tam/519e2174-62f7-4f11-96be-579512e48049.html",
    "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/120/Tam/7d8cdd40-e320-4734-9bb1-3c6b00db644a.docx"
   ],
-  "durum": "Tam",
+  "durum": "Basılmış",
   "id": "39968208-f791-4b08-a967-019fd1adb1d8",
   "oylama_urls": [],
   "ozet_url": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/4/120/Ozet/1c161d79-9dd1-4d69-a4c9-90a3df3ef0ff.html",
@@ -1957,6 +1959,20 @@
   "oylama_urls": [],
   "ozet_url": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/11/Ozet/937c384e-6274-4973-b472-802758057565.html",
   "tarih": "27 Ekim 2026 Salı",
+  "yil": 5
+ },
+ "28-5-12": {
+  "donem": 28,
+  "dosyalar": [
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/12/Ham/28ec30cc-2048-411d-90c6-3b987fb0a5a3.pdf",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/12/Ham/52d91fdc-7eb0-4c50-938d-7add84e14ea4.html",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/12/Ham/71355e31-18e8-46df-84c4-aa5b727d56fe.docx"
+  ],
+  "durum": "Ham",
+  "id": "c469b326-1b97-4530-837c-01a1a1708335",
+  "oylama_urls": [],
+  "ozet_url": null,
+  "tarih": "03 Kasım 2026 Salı",
   "yil": 5
  },
  "28-5-2": {

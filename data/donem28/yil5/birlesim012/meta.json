@@ -1,0 +1,23 @@
+{
+  "key": "28-5-12",
+  "donem": 28,
+  "yil": 5,
+  "birlesim": 12,
+  "id": "c469b326-1b97-4530-837c-01a1a1708335",
+  "tarih": "03 Kasım 2026 Salı",
+  "durum": "Ham",
+  "kaynaklar": {
+    "metin_html": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/12/Ham/52d91fdc-7eb0-4c50-938d-7add84e14ea4.html",
+    "pdf": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/12/Ham/28ec30cc-2048-411d-90c6-3b987fb0a5a3.pdf",
+    "docx": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/12/Ham/71355e31-18e8-46df-84c4-aa5b727d56fe.docx",
+    "ozet": null,
+    "oylama": [],
+    "tumu": [
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/12/Ham/28ec30cc-2048-411d-90c6-3b987fb0a5a3.pdf",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/12/Ham/52d91fdc-7eb0-4c50-938d-7add84e14ea4.html",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/12/Ham/71355e31-18e8-46df-84c4-aa5b727d56fe.docx"
+    ]
+  },
+  "oylama_sayisi": 0,
+  "indirildi": "2026-11-03T16:34:08+03:00"
+}
