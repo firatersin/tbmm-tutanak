@@ -1996,13 +1996,15 @@
  "28-5-14": {
   "donem": 28,
   "dosyalar": [
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/14/Ham/51bb4d59-841c-4a55-86ce-887745ff187f.pdf",
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/14/Ham/604804e6-a908-4328-9f59-6e85ab54853c.html",
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/14/Ham/ee84bc2b-ba8c-4671-abc3-ef20b8eebce9.docx"
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/14/Ham/b9ac02f0-8eaa-42a9-aeb0-1e90e7779c6a.pdf",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/14/Ham/cd0b5090-7c09-4a67-a9b9-887a5476432a.html",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/14/Ham/e5da4358-12d4-4455-aa20-f967c1a1e4d9.docx"
   ],
   "durum": "Ham",
   "id": "ed1ad0bd-91e3-4186-a30f-01a1ab768109",
-  "oylama_urls": [],
+  "oylama_urls": [
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/14/AcikOylamaSonuc/cbfb34cb-f290-4c39-a3b3-b902717425ea.html"
+  ],
   "ozet_url": null,
   "tarih": "05 Kasım 2026 Perşembe",
   "yil": 5
