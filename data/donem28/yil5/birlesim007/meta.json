@@ -5,19 +5,19 @@
   "birlesim": 7,
   "id": "0fbb96c6-b5c4-45d3-bffc-01a13f51edd4",
   "tarih": "15 Ekim 2026 Perşembe",
-  "durum": "Ham",
+  "durum": "Tam",
   "kaynaklar": {
-    "metin_html": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Ham/7fa4d960-eac0-404b-8c35-beca3c8c4b04.html",
-    "pdf": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Ham/f0c59dc6-293b-414a-8fa6-fb29c604d1ce.pdf",
-    "docx": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Ham/e632f235-b945-4b94-9df0-16b79370d876.docx",
+    "metin_html": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Tam/3a492aab-b3db-45b4-a9c2-54b6298b43db.html",
+    "pdf": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Tam/eddcced6-e470-4c1c-a527-5cf07b1e525f.pdf",
+    "docx": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Tam/3b4b5357-d3c8-4892-a198-ac38627284c2.docx",
     "ozet": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Ozet/a4972984-7769-4b9e-a089-e467619eb41d.html",
     "oylama": [],
     "tumu": [
-      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Ham/7fa4d960-eac0-404b-8c35-beca3c8c4b04.html",
-      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Ham/e632f235-b945-4b94-9df0-16b79370d876.docx",
-      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Ham/f0c59dc6-293b-414a-8fa6-fb29c604d1ce.pdf"
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Tam/3a492aab-b3db-45b4-a9c2-54b6298b43db.html",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Tam/3b4b5357-d3c8-4892-a198-ac38627284c2.docx",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/7/Tam/eddcced6-e470-4c1c-a527-5cf07b1e525f.pdf"
     ]
   },
   "oylama_sayisi": 0,
-  "indirildi": "2026-10-16T23:12:06+03:00"
+  "indirildi": "2026-11-06T16:41:57+03:00"
 }
