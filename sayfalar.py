@@ -46,17 +46,16 @@ def bos(baslik: str, metin: str, dugme: str = "") -> str:
 
 
 def oylama_satiri(v: dict, *, oturum_goster: bool = True, ek: str = "", sayim_veri=None) -> str:
+    """Genel bakış satırı: ne oylandı, sonuç ne oldu. Ayrıntılar oylama sayfasında."""
     sayilar = sayim_veri if sayim_veri is not None else A.vote_counts(v)
-    bilgi = [f'<span class="tur">Oylama</span>']
-    if oturum_goster:
-        bilgi.append(f"<span>{v['birlesim']}. Birleşim · {kisa_tarih(v['date'])}{' · ' + saat(v) if saat(v) else ''}</span>")
-    elif saat(v):
-        bilgi.append(f"<span>{saat(v)}</span>")
+    bilgi = []
+    zaman = (f"{v['date'].day} {A.AYLAR[v['date'].month - 1]}" if oturum_goster else "") + (" · " if oturum_goster and saat(v) else "") + saat(v)
+    if zaman:
+        bilgi.append(f"<span>{zaman}</span>")
     q = escape(f"{v['baslik']} {v['sonuc']} {v['tarih_yazi']} {v['birlesim']}. birleşim")
     return (f'<li class="satir" data-q="{q}" data-f="{sonuc_turu(v["sonuc"])}" data-id="{escape(v["read_id"])}">'
             f'<a href="{v["page"]}"><div class="bilgi">{"".join(bilgi)}</div><h3>{escape(A.temiz_baslik(v["baslik"]))}</h3>'
-            f'<p class="govde" style="-webkit-line-clamp:1">{escape(v["sonuc"] or "Sonuç belirtilmemiş")}</p>'
-            f'{S.sayim(sayilar, sinif="ince")}{ek}</a></li>')
+            f'{S.sonuc_satiri(v["sonuc"], sayilar)}{ek}</a></li>')
 
 
 def ay_gruplari(ogeler: list, tarih, satir) -> str:
@@ -72,16 +71,14 @@ def ay_gruplari(ogeler: list, tarih, satir) -> str:
 def akis_sayfasi() -> str:
     govde = """<div class="kap">
 <div class="baslik"><h1>Akış</h1><p class="alt" id="alt">&nbsp;</p></div>
-<div class="on-izleme" id="yukle" hidden><p class="not"></p>
-  <div style="display:flex;gap:8px;margin-top:10px"><button class="dugme" id="yukle-dugme" hidden>Uygulamayı yükle</button>
-  <button class="dugme yalin" id="yukle-kapat">Kapat</button></div></div>
-<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 5px">
-  <div class="cipler" id="tur" role="group" aria-label="Kayıt türü">
-    <button class="cip" data-v="" aria-pressed="true">Tümü</button>
-    <button class="cip" data-v="O" aria-pressed="false">Oylamalar</button>
-    <button class="cip" data-v="T" aria-pressed="false">Tutanaklar</button></div>
-  <label class="kutu" style="font-size:14.5px;align-items:center"><input type="checkbox" id="sadeceYeni">Yalnızca okunmamışlar</label>
-</div>
+<div class="yukle-serit" id="yukle" hidden><p></p>
+  <button class="dugme kucuk" id="yukle-dugme" hidden>Yükle</button>
+  <button class="kapat-x" id="yukle-kapat" aria-label="Kapat">✕</button></div>
+<div class="cipler kaydir" id="tur" role="group" aria-label="Kayıt türü" style="margin-top:6px;margin-bottom:4px">
+  <button class="cip" data-v="" aria-pressed="true">Tümü</button>
+  <button class="cip" data-v="O" aria-pressed="false">Oylamalar</button>
+  <button class="cip" data-v="T" aria-pressed="false">Tutanaklar</button>
+  <button class="cip" id="sadeceYeni" aria-pressed="false">Okunmamış</button></div>
 <div id="liste" aria-live="polite"><p class="not" style="padding:30px 0">Kayıtlar yükleniyor…</p></div>
 <button class="dugme daha" id="daha" hidden></button>
 <noscript><p class="bos">Kişisel akış için JavaScript gerekir. <a href="oturumlar.html">Oturumlar</a> ve <a href="oylamalar.html">Oylamalar</a> sekmeleri JavaScript olmadan da çalışır.</p></noscript>
@@ -101,22 +98,23 @@ def oturumlar_sayfasi(sessions: list[dict]) -> str:
     def satir(s):
         q = escape(f"{s['birlesim']}. birleşim {A.tarih_yazi(s['date'])} {s['lead']}")
         f = ["oylamali"] if s["votes"] else []
-        f.append("ham" if A.durum_kodu(s["durum"]) == "ham" else "kesin")
-        sayilar = f"{len(s['doc']['speakers'])} konuşmacı" + (f" · {len(s['votes'])} açık oylama" if s["votes"] else "")
+        ham = A.durum_kodu(s["durum"]) == "ham"
+        f.append("ham" if ham else "kesin")
+        bilgi = [f'<span class="tur">{s["birlesim"]}. Birleşim</span>', f"<span>{len(s['doc']['speakers'])} konuşmacı</span>"]
+        if s["votes"]:
+            bilgi.append(f"<span>{len(s['votes'])} oylama</span>")
+        if ham:
+            bilgi.append('<span class="ham-yazi" title="Stenograflarca deşifre edilmiş, uzman incelemesinden geçmemiş">Ham</span>')
         return (f'<li class="satir" data-q="{q}" data-f="{" ".join(f)}" data-id="{escape(s["read_id"])}"><a href="{s["page"]}">'
-                f'<div class="bilgi"><span class="tur">{s["birlesim"]}. Birleşim</span>{durum_etiketi(s["durum"])}</div>'
-                f'<h3>{escape(A.tarih_yazi(s["date"]))}</h3>'
-                + (f'<p class="govde" style="-webkit-line-clamp:2">{escape(s["lead"])}</p>' if s["lead"] else "")
-                + f'<div class="bilgi" style="margin-top:6px">{sayilar}</div></a></li>')
+                f'<div class="bilgi">{"".join(bilgi)}</div><h3>{escape(A.tarih_yazi(s["date"]))}</h3></a></li>')
 
     govde = f"""<div class="kap">
-<div class="baslik"><h1>Oturumlar</h1><p class="alt">Genel Kurul birleşimleri, en yenisi üstte · {len(sessions)} oturum</p>{tatil}</div>
+<div class="baslik"><h1>Oturumlar</h1><p class="alt" id="sayac" aria-live="polite">{len(sessions)} birleşim</p>{tatil}</div>
 <div class="cipler" id="filtre" role="group" aria-label="Süzgeç">
-  <button class="cip" data-v="" aria-pressed="true">Tümü</button><button class="cip" data-v="oylamali" aria-pressed="false">Açık oylama olanlar</button>
-  <button class="cip" data-v="ham" aria-pressed="false">Ham tutanak</button><button class="cip" data-v="kesin" aria-pressed="false">Kesinleşmiş</button></div>
+  <button class="cip" data-v="" aria-pressed="true">Tümü</button><button class="cip" data-v="oylamali" aria-pressed="false">Oylamalı</button>
+  <button class="cip" data-v="ham" aria-pressed="false">Ham</button><button class="cip" data-v="kesin" aria-pressed="false">Kesin</button></div>
 <div style="margin-top:10px"><label class="gizli-metin" for="suz">Oturumlarda süz</label>
-<input class="alan" id="suz" type="search" placeholder="Tarih, birleşim no ya da karar" autocomplete="off"></div>
-<p class="not" id="sayac" style="margin-top:8px" aria-live="polite"></p>
+<input class="alan" id="suz" type="search" placeholder="Ara: tarih, birleşim, karar" autocomplete="off"></div>
 {ay_gruplari(sessions, lambda s: s["date"], satir) or bos("Henüz oturum yok", "İlk tutanak yayımlandığında burada görünecek.")}
 </div>"""
     return S.sayfa("Oturumlar · Meclis Tutanakları", govde, sekme="oturumlar", modul="liste.js")
@@ -127,13 +125,12 @@ def oturumlar_sayfasi(sessions: list[dict]) -> str:
 def oylamalar_sayfasi(votes: list[dict]) -> str:
     sirali = sorted(votes, key=lambda v: (v["date"], v["baslangic"] or ""), reverse=True)
     govde = f"""<div class="kap">
-<div class="baslik"><h1>Oylamalar</h1><p class="alt">Açık oylamalar: her milletvekilinin oyu kayıtlıdır · {len(votes)} oylama</p></div>
+<div class="baslik"><h1>Oylamalar</h1><p class="alt" id="sayac" aria-live="polite">{len(votes)} açık oylama</p></div>
 <div class="cipler" id="filtre" role="group" aria-label="Sonuca göre">
-  <button class="cip" data-v="" aria-pressed="true">Tümü</button><button class="cip" data-v="kabul" aria-pressed="false">Kabul edilenler</button>
-  <button class="cip" data-v="ret" aria-pressed="false">Kabul edilmeyenler</button></div>
+  <button class="cip" data-v="" aria-pressed="true">Tümü</button><button class="cip" data-v="kabul" aria-pressed="false">Kabul</button>
+  <button class="cip" data-v="ret" aria-pressed="false">Ret</button></div>
 <div style="margin-top:10px"><label class="gizli-metin" for="suz">Oylamalarda süz</label>
-<input class="alan" id="suz" type="search" placeholder="Teklif adı, sıra sayısı ya da tarih" autocomplete="off"></div>
-<p class="not" id="sayac" style="margin-top:8px" aria-live="polite"></p>
+<input class="alan" id="suz" type="search" placeholder="Ara: teklif, tarih, sıra sayısı" autocomplete="off"></div>
 {ay_gruplari(sirali, lambda v: v["date"], oylama_satiri) or bos("Henüz açık oylama yok", "Bu yasama yılında açık oylama yapıldığında burada görünecek.")}
 <p class="not" style="margin-top:30px">Yalnızca açık oylamalar listelenir. İşaretle (el kaldırarak) yapılan oylamalarda milletvekillerinin oyları kayda geçmez. <a href="yontem.html">Yöntem</a></p>
 </div>"""

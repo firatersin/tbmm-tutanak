@@ -105,19 +105,19 @@ export async function eslestir(d, t) {
     for (const id of t.mv) {
       const i = d.mvIndex[id]; if (i === undefined) continue;
       const ad = d.mv[i][1];
-      if (o.t === 'T' && o.k[i]) n.push({ m: `<b>${esc(ad)}</b> konuştu (${o.k[i][0]})`, u: `${o.p}#konusmaci=${o.k[i][1]}` });
-      if (o.t === 'O' && o.v[i] && o.v[i] !== '-') n.push({ m: `<b>${esc(ad)}</b>: ${OY[o.v[i]]}` });
+      if (o.t === 'T' && o.k[i]) n.push({ k: `${esc(ad)} konuştu`, m: `<b>${esc(ad)}</b> konuştu (${o.k[i][0]})`, u: `${o.p}#konusmaci=${o.k[i][1]}` });
+      if (o.t === 'O' && o.v[i] && o.v[i] !== '-') n.push({ k: `${esc(ad)}: ${OY[o.v[i]]}`, m: `<b>${esc(ad)}</b>: ${OY[o.v[i]]}` });
     }
     for (const il of t.iller) {
-      if (o.t === 'T' && o.ik[il]) n.push({ m: `${esc(il)}: ${o.ik[il]} konuşmacı` });
-      if (o.t === 'O' && o.iv[il]) n.push({ m: `${esc(il)}: ${dagilim(o.iv[il])}` });
+      if (o.t === 'T' && o.ik[il]) n.push({ k: esc(il), m: `${esc(il)}: ${o.ik[il]} konuşmacı` });
+      if (o.t === 'O' && o.iv[il]) n.push({ k: esc(il), m: `${esc(il)}: ${dagilim(o.iv[il])}` });
     }
     for (const p of t.parti) {
-      if (o.t === 'T' && o.pk[p]) n.push({ m: `${esc(p)}: ${o.pk[p]} konuşmacı` });
-      if (o.t === 'O' && o.pv[p]) n.push({ m: `${esc(p)}: ${dagilim(o.pv[p])}` });
+      if (o.t === 'T' && o.pk[p]) n.push({ k: esc(p), m: `${esc(p)}: ${o.pk[p]} konuşmacı` });
+      if (o.t === 'O' && o.pv[p]) n.push({ k: esc(p), m: `${esc(p)}: ${dagilim(o.pv[p])}` });
     }
     const goruldu = new Set();
-    for (const [s, etiket] of kelimeSet) if (s.has(idx) && !goruldu.has(etiket)) { goruldu.add(etiket); n.push({ m: `${esc(etiket)} geçiyor` }); }
+    for (const [s, etiket] of kelimeSet) if (s.has(idx) && !goruldu.has(etiket)) { goruldu.add(etiket); n.push({ k: esc(etiket), m: `${esc(etiket)} geçiyor` }); }
     if (n.length) sonuc.set(idx, n);
   });
   return sonuc;
@@ -135,22 +135,37 @@ export function sayimHTML(to, ince = true) {
 const durumEtiketi = du => /^bas/i.test(du) ? '<span class="etiket kesin">Basılmış</span>'
   : /^tam/i.test(du) ? '<span class="etiket kesin">Tam tutanak</span>' : '<span class="etiket ham">Ham tutanak</span>';
 
-export function satirHTML(o, nedenler, okundu, { ozetGoster = true } = {}) {
+/** Liste satırının kısa sonucu; ayrıntılı sonuç cümlesi oylama sayfasındadır */
+export function sonucKisa(so) {
+  const s = kucuk(so || '');
+  if (/edilme|redd/.test(s)) return ['ret', 'Kabul edilmedi'];
+  if (s.includes('kanunlaş')) return ['kabul', 'Kanunlaştı'];
+  return s ? ['kabul', 'Kabul edildi'] : ['', ''];
+}
+export function sonucSatiriHTML(so, to) {
+  const [k, r, c] = to; const [sinif, metin] = sonucKisa(so);
+  const dilim = [['k', k], ['r', r], ['c', c]].map(([s, n]) => n ? `<i class="${s}" style="flex:${n}"></i>` : '').join('');
+  const etiket = `${metin}. Kabul ${k || 0}, ret ${r || 0}${c ? `, çekimser ${c}` : ''}`;
+  return `<div class="sonuc-satiri" role="img" aria-label="${etiket}">${metin ? `<span class="sonuc-ad ${sinif}">${metin}</span>` : ''}`
+    + `<span class="mini-sayim" aria-hidden="true">${dilim}</span>`
+    + `<span class="oran" aria-hidden="true"><span class="isaret k">✓</span>${k || 0}<span class="isaret r">✕</span>${r || 0}</span></div>`;
+}
+
+/** Genel bakış satırı: ne olduğu, sonucu ve (kişisel akışta) neden göründüğü. Ayrıntılar kayıt sayfasında. */
+export function satirHTML(o, nedenler, okundu) {
   const yeni = !okundu[o.id];
-  let ust, govde = '';
+  let ust, govde = '', baslik;
   if (o.t === 'O') {
-    ust = `<span class="tur">Oylama</span><span>${o.bn}. Birleşim${o.s ? ' · ' + saatYaz(o.s) : ''}</span>`;
-    govde = `<p class="govde" style="-webkit-line-clamp:1">${esc(o.so || '')}</p>${sayimHTML(o.to)}`
-      + (ozetGoster && o.l ? `<p class="govde" style="-webkit-line-clamp:2">${esc(o.l)}</p>` : '');
+    ust = `<span class="tur">Oylama</span>${o.s ? `<span>${saatYaz(o.s)}</span>` : ''}`;
+    baslik = esc(o.b);
+    govde = sonucSatiriHTML(o.so, o.to);
   } else {
-    ust = `<span class="tur">Tutanak</span><span>${o.bn}. Birleşim</span>${durumEtiketi(o.du)}`;
-    govde = `<div class="bilgi" style="margin-top:6px">${o.ko} konuşmacı${o.n ? ` · ${o.n} açık oylama` : ''}</div>`;
+    ust = `<span class="tur">Tutanak</span><span>${o.ko} konuşmacı</span>${o.n ? `<span>${o.n} oylama</span>` : ''}`;
+    baslik = `${o.bn}. Birleşim tutanağı`;
   }
-  // Tutanakta başlık, o gün alınan son karardır (TBMM özetinden, değiştirilmeden)
-  const baslik = o.t === 'O' ? esc(o.b) : (o.l ? esc(o.l) : 'Genel Kurul toplandı');
   const neden = nedenler?.length
-    ? `<div class="neden"><span class="gizli-metin">Akışınızda olma nedeni:</span>${nedenler.slice(0, 6).map(n => n.u ? `<a href="${n.u}">${n.m}</a>` : `<span>${n.m}</span>`).join('')}${nedenler.length > 6 ? `<span>+${nedenler.length - 6}</span>` : ''}</div>` : '';
-  return `<li class="satir${yeni ? ' yeni' : ''}"><a href="${o.p}"><div class="bilgi">${ust}${yeni ? '<span class="gizli-metin">okunmadı</span>' : ''}</div><h3>${baslik}</h3>${govde}</a>${neden}</li>`;
+    ? `<div class="neden"><span class="gizli-metin">Akışınızda olma nedeni:</span>${nedenler.slice(0, 3).map(n => `<span title="${n.m.replace(/<[^>]+>/g, '')}">${n.k || n.m}</span>`).join('')}${nedenler.length > 3 ? `<span class="fazla">+${nedenler.length - 3}</span>` : ''}</div>` : '';
+  return `<li class="satir${yeni ? ' yeni' : ''}${o.t === 'T' ? ' tutanak' : ''}"><a href="${o.p}"><div class="bilgi">${ust}${yeni ? '<span class="gizli-metin">okunmadı</span>' : ''}</div><h3>${baslik}</h3>${govde}${neden}</a></li>`;
 }
 
 // ---------- Takip düğmeleri: data-tur (mv|parti|il|kelime|konu) + data-id ----------

@@ -140,6 +140,30 @@ def sayim(sayilar: dict | list, *, sinif: str = "", etiket: bool = True, toplam_
     return cubuk + f'<div class="sayilar" aria-hidden="true">{yazilar}</div>'
 
 
+def sonuc_kisa(sonuc: str) -> tuple[str, str]:
+    """Liste satırı için sonucun tek kelimelik hali: (sınıf, metin). Ayrıntı oylama sayfasındadır."""
+    s = (sonuc or "").lower()
+    if "edilme" in s or "redd" in s:
+        return "ret", "Kabul edilmedi"
+    if "kanunlaş" in s:
+        return "kabul", "Kanunlaştı"
+    return ("kabul", "Kabul edildi") if s else ("", "")
+
+
+def sonuc_satiri(sonuc: str, sayilar: dict | list) -> str:
+    """Genel bakış satırı: sonuç + kabul/ret oranını gösteren ince çubuk + iki sayı."""
+    if isinstance(sayilar, list):
+        sayilar = dict(zip(["KABUL", "RET", "ÇEKİMSER", "KATILMADI"], sayilar))
+    k, r, c = (sayilar.get(x, 0) for x in ("KABUL", "RET", "ÇEKİMSER"))
+    sinif, metin = sonuc_kisa(sonuc)
+    dilim = "".join(f'<i class="{s}" style="flex:{n}"></i>' for s, n in (("k", k), ("r", r), ("c", c)) if n)
+    etiket = f"{metin}. Kabul {k}, ret {r}" + (f", çekimser {c}" if c else "")
+    return (f'<div class="sonuc-satiri" role="img" aria-label="{escape(etiket)}">'
+            + (f'<span class="sonuc-ad {sinif}">{metin}</span>' if metin else "")
+            + f'<span class="mini-sayim" aria-hidden="true">{dilim}</span>'
+            f'<span class="oran" aria-hidden="true"><span class="isaret k">✓</span>{k}<span class="isaret r">✕</span>{r}</span></div>')
+
+
 # ---------- Parti renk kareleri ----------
 
 # Yaklaşık renkler; yalnızca ayırt etmeye yardım eder ve her zaman parti adıyla birlikte gösterilir.

@@ -6,6 +6,7 @@ const satirlar = [...document.querySelectorAll('.liste > .satir[data-q]')];
 const ok = okunanlar();
 satirlar.forEach(s => { s.dataset.q = katla(s.dataset.q); if (!ok[s.dataset.id]) s.classList.add('yeni'); });
 let filtre = '';
+const ilkSayac = $('sayac')?.textContent || '';
 function suz() {
   const q = katla($('suz')?.value.trim() || '');
   satirlar.forEach(s => {
@@ -15,7 +16,7 @@ function suz() {
     g.hidden = ![...g.querySelectorAll('.satir[data-q]')].some(s => !s.hidden);
   });
   const n = satirlar.filter(s => !s.hidden).length;
-  if ($('sayac')) $('sayac').textContent = `${n} kayıt`;
+  if ($('sayac')) $('sayac').textContent = (filtre || q) ? `${n} / ${satirlar.length} gösteriliyor` : ilkSayac;
 }
 document.querySelectorAll('#filtre button').forEach(b => b.onclick = () => {
   filtre = b.dataset.v; document.querySelectorAll('#filtre button').forEach(x => x.setAttribute('aria-pressed', x === b)); suz();

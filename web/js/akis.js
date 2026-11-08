@@ -16,9 +16,9 @@ function ozetSatiri() {
     if (t.parti.length) parcalar.push(`${t.parti.length} parti`);
     const konu = t.kelime.length + t.konular.length;
     if (konu) parcalar.push(`${konu} konu`);
-    $('alt').innerHTML = `Takip ettikleriniz: ${esc(parcalar.join(', '))} · <a href="takip.html">Düzenle</a>`;
+    $('alt').innerHTML = `${esc(parcalar.join(', '))} · <a href="takip.html">Düzenle</a>`;
   } else {
-    $('alt').innerHTML = 'Tüm tutanak ve oylamalar, en yenisi üstte · <a href="hosgeldiniz.html">Akışınızı kişiselleştirin</a>';
+    $('alt').innerHTML = 'Tüm kayıtlar · <a href="hosgeldiniz.html">Kişiselleştir</a>';
   }
 }
 
@@ -45,7 +45,7 @@ function ciz() {
       if (gun) html += '</ul>';
       gun = o.d; html += `<h2 class="gun">${gunEtiketi(o.d)}</h2><ul class="liste">`;
     }
-    html += satirHTML(o, n, ok, { ozetGoster: !kisisel || t.turler.teklif });
+    html += satirHTML(o, n, ok);
   }
   $('liste').innerHTML = html + '</ul>';
   $('daha').hidden = satirlar.length <= goster;
@@ -61,12 +61,12 @@ async function hazirla() {
   ciz();
 }
 
-document.querySelectorAll('#tur button').forEach(b => b.onclick = () => {
+document.querySelectorAll('#tur button[data-v]').forEach(b => b.onclick = () => {
   tur = b.dataset.v; goster = SAYFA;
-  document.querySelectorAll('#tur button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  document.querySelectorAll('#tur button[data-v]').forEach(x => x.setAttribute('aria-pressed', x === b));
   ciz();
 });
-$('sadeceYeni').onchange = e => { sadeceYeni = e.target.checked; goster = SAYFA; ciz(); };
+$('sadeceYeni').onclick = e => { sadeceYeni = !sadeceYeni; e.currentTarget.setAttribute('aria-pressed', sadeceYeni); goster = SAYFA; ciz(); };
 $('daha').onclick = () => { goster += SAYFA; ciz(); };
 addEventListener('pageshow', e => { if (e.persisted && d) ciz(); });
 
@@ -76,10 +76,10 @@ function yuklemeIpucu() {
   if (kurulu() || kapali) return;
   const k = $('yukle');
   if (ios()) {
-    k.querySelector('p').innerHTML = 'Uygulama gibi kullanmak ve ileride bildirim alabilmek için Safari\'de <b>Paylaş</b>, ardından <b>Ana Ekrana Ekle</b>\'ye dokunun.';
+    k.querySelector('p').innerHTML = 'Ana ekrana ekleyin: <b>Paylaş</b> → <b>Ana Ekrana Ekle</b>';
     k.hidden = false;
   } else if (yuklemeOlayi) {
-    k.querySelector('p').textContent = 'Meclis Tutanakları\'nı uygulama olarak yükleyebilirsiniz; ana ekrandan açılır ve çevrimdışı da okunur.';
+    k.querySelector('p').textContent = 'Uygulama olarak yükleyin, çevrimdışı da okunur.';
     $('yukle-dugme').hidden = false; k.hidden = false;
   }
 }
