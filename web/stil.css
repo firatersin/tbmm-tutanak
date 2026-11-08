@@ -4,16 +4,17 @@
    Aralıklar 5 px tabanlı (5, 10, 15, 20, 30, 40, 60); köşe yarıçapı yalnızca denetimlerde 3 px. */
 
 :root {
-  --kagit: #F7F2E8;
-  --kagit-2: #EFE8DA;
+  --kagit: #FAF8F4;
+  --kagit-2: #F2EEE7;
+  --yuzey: #FFFFFF;
   --murekkep: #1C1A17;
   --murekkep-2: #57524A;
   --murekkep-3: #736C61;
-  --cizgi: #D6CDBE;
-  --cizgi-guclu: #B3A994;
+  --cizgi: #E6E0D5;
+  --cizgi-guclu: #C9C0B0;
   --vurgu: #1E5260;
-  --vurgu-uzeri: #F7F2E8;
-  --vurgu-acik: #DDE7E6;
+  --vurgu-uzeri: #FAF8F4;
+  --vurgu-acik: #E1ECEB;
   --kabul: #32669d;
   --ret: #b35b37;
   --cekimser: #D8D0C2;
@@ -27,7 +28,8 @@
   --sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   --a1: 5px; --a2: 10px; --a3: 15px; --a4: 20px; --a5: 30px; --a6: 40px; --a7: 60px;
-  --yaricap: 3px;
+  --yaricap: 8px;
+  --yaricap-buyuk: 16px;
   --kenar: 15px;
   --alt-nav: 60px;
   --okuma: 18px;
@@ -36,9 +38,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema="acik"]) {
-    --kagit: #1A1714; --kagit-2: #23201B;
+    --kagit: #181512; --kagit-2: #221F1B; --yuzey: #24211C;
     --murekkep: #ECE6DA; --murekkep-2: #B5AD9F; --murekkep-3: #9A9284;
-    --cizgi: #3A342D; --cizgi-guclu: #5A5247;
+    --cizgi: #332E28; --cizgi-guclu: #514940;
     --vurgu: #8CC3CF; --vurgu-uzeri: #1A1714; --vurgu-acik: #233338;
     --kabul: #5790ce; --ret: #cc7a54; --cekimser: #4A443B;
     --ham-yazi: #F0C97A; --ham-zemin: #3A2F18;
@@ -48,9 +50,9 @@
   }
 }
 :root[data-tema="koyu"] {
-  --kagit: #1A1714; --kagit-2: #23201B;
+  --kagit: #181512; --kagit-2: #221F1B; --yuzey: #24211C;
   --murekkep: #ECE6DA; --murekkep-2: #B5AD9F; --murekkep-3: #9A9284;
-  --cizgi: #3A342D; --cizgi-guclu: #5A5247;
+  --cizgi: #332E28; --cizgi-guclu: #514940;
   --vurgu: #8CC3CF; --vurgu-uzeri: #1A1714; --vurgu-acik: #233338;
   --kabul: #5790ce; --ret: #cc7a54; --cekimser: #4A443B;
   --ham-yazi: #F0C97A; --ham-zemin: #3A2F18;

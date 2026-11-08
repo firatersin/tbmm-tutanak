@@ -1,0 +1,172 @@
+/* Meclis Tutanakları — yüzeyler ve hareket (stil.css'ten sonra yüklenir)
+   Daha yalın, çağdaş yüzeyler (yarı saydam üst/alt çubuk, beyaz denetimler, hap çipler) ve tek bir hareket
+   sistemi: aynı süreler ve eğriler her yerde. "Hareketi azalt" tercihinde tümü kapanır. */
+
+:root {
+  --hiz-1: 140ms; --hiz-2: 220ms; --hiz-3: 360ms;
+  --egri: cubic-bezier(.2, .7, .2, 1);          /* yumuşak çıkış */
+  --egri-giris: cubic-bezier(.16, 1, .3, 1);    /* belirgin ama sakin yerleşme */
+  --bulanik: color-mix(in srgb, var(--kagit) 82%, transparent);
+  interpolate-size: allow-keywords;             /* <details> yüksekliği yumuşak açılsın */
+}
+body { transition: background-color var(--hiz-3) var(--egri), color var(--hiz-3) var(--egri); }
+a, button, .cip, .dugme, .alan, .satir > a, .alt-nav a { -webkit-tap-highlight-color: transparent; }
+a { transition: color var(--hiz-1) var(--egri), text-decoration-color var(--hiz-1) var(--egri); }
+
+/* ---------- Üst çubuk: yapışkan, yarı saydam, bulanık ---------- */
+.ust {
+  position: sticky; top: 0; z-index: 25; background: var(--bulanik);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px); backdrop-filter: saturate(1.4) blur(14px);
+  border-bottom-color: color-mix(in srgb, var(--cizgi) 80%, transparent);
+}
+.arac, .gun { top: 52px; }
+.arac { background: var(--bulanik); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+html { scroll-padding-top: 120px; }
+
+/* ---------- Alt sekme çubuğu: bulanık zemin, etkin sekmede simgenin arkasında hap ---------- */
+.alt-nav {
+  background: var(--bulanik); -webkit-backdrop-filter: saturate(1.4) blur(16px); backdrop-filter: saturate(1.4) blur(16px);
+  border-top-color: color-mix(in srgb, var(--cizgi) 80%, transparent);
+}
+.alt-nav a { gap: 4px; font-size: 11.5px; transition: color var(--hiz-2) var(--egri); }
+.alt-nav a[aria-current="page"]::before { content: none; }
+.alt-nav .hap {
+  display: grid; place-items: center; width: 56px; height: 30px; border-radius: 999px;
+  transition: background-color var(--hiz-2) var(--egri), transform var(--hiz-1) var(--egri);
+}
+.alt-nav a[aria-current="page"] .hap { background: var(--vurgu-acik); color: var(--vurgu); view-transition-name: sekme-hap; }
+.alt-nav a:active .hap { transform: scale(.92); }
+
+/* ---------- Satırlar: dokunmaya tepki veren yumuşak yüzey ---------- */
+.satir > a { border-radius: 12px; margin: -6px -10px; padding: 6px 10px; }
+.satir > a, a.satir { transition: background-color var(--hiz-1) var(--egri), transform var(--hiz-1) var(--egri); }
+@media (hover: hover) {
+  .satir > a:hover, a.satir:hover { background: var(--kagit-2); }
+  .satir > a:hover h3, a.satir:hover h3 { text-decoration: none; }
+}
+.satir > a:active { background: var(--kagit-2); transform: scale(.995); }
+.gun { border-bottom-color: var(--cizgi-guclu); background: var(--bulanik); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); font-size: 13.5px; }
+.bolum > h2 { border-bottom-color: var(--cizgi-guclu); }
+
+/* ---------- Denetimler ---------- */
+.dugme, .alan, select.alan {
+  border-radius: var(--yaricap);
+  transition: background-color var(--hiz-1) var(--egri), border-color var(--hiz-1) var(--egri), color var(--hiz-1) var(--egri),
+    box-shadow var(--hiz-2) var(--egri), transform var(--hiz-1) var(--egri);
+}
+.dugme { background: var(--yuzey); border-color: var(--cizgi-guclu); }
+@media (hover: hover) { .dugme:hover { border-color: var(--murekkep-3); } }
+.dugme:active:not([disabled]) { transform: scale(.97); }
+.dugme.ana { box-shadow: 0 1px 2px rgba(28, 26, 23, .12); }
+.dugme.ana:hover { filter: none; background: color-mix(in srgb, var(--vurgu) 88%, #000); }
+.dugme.yalin { background: transparent; }
+.dugme.tehlike { background: transparent; }
+.alan { background: var(--yuzey); border-color: var(--cizgi-guclu); }
+.alan:focus { outline: none; border-color: var(--vurgu); box-shadow: 0 0 0 3px var(--vurgu-acik); }
+.cip {
+  border-radius: 999px; background: var(--yuzey); border-color: var(--cizgi); padding: 0 16px;
+  transition: background-color var(--hiz-2) var(--egri), border-color var(--hiz-2) var(--egri), color var(--hiz-2) var(--egri), transform var(--hiz-1) var(--egri);
+}
+@media (hover: hover) { .cip:hover { border-color: var(--cizgi-guclu); } }
+.cip:active { transform: scale(.96); }
+.cip[aria-pressed="true"] { background: var(--murekkep); border-color: var(--murekkep); color: var(--kagit); }
+.segment { border: 0; border-radius: 12px; background: var(--kagit-2); padding: 4px; gap: 4px; overflow: visible; }
+.segment button { border-radius: 9px; min-height: 38px; transition: background-color var(--hiz-2) var(--egri), color var(--hiz-2) var(--egri), box-shadow var(--hiz-2) var(--egri); }
+.segment button + button { border-left: 0; }
+.segment button[aria-selected="true"] { background: var(--yuzey); color: var(--murekkep); box-shadow: 0 1px 3px rgba(28, 26, 23, .14); }
+.takip-dugme { border-radius: 999px; padding: 0 18px; }
+.takip-dugme[aria-pressed="true"] { animation: tik var(--hiz-2) var(--egri); }
+.etiket { border-radius: 6px; }
+.secilenler button { border-radius: 999px; animation: belir var(--hiz-2) var(--egri-giris) both; }
+.secim-listesi li button { transition: background-color var(--hiz-1) var(--egri); }
+@media (hover: hover) { .secim-listesi li button:hover { background: var(--kagit-2); } }
+label.kutu input { transition: transform var(--hiz-1) var(--egri); }
+label.kutu input:active { transform: scale(.9); }
+
+/* Bilgi kutuları (yükleme önerisi, önizleme, bildirim planı): ağır çizgi yerine yumuşak kart */
+.on-izleme { background: var(--yuzey); border: 1px solid var(--cizgi); border-radius: 14px; padding: 15px 16px; animation: belir var(--hiz-3) var(--egri-giris) both; }
+
+/* ---------- Oturum sekmeleri: alt çizgi ortadan açılır, panel süzülür ---------- */
+.sekmeler a, .sekmeler button { transition: color var(--hiz-2) var(--egri); }
+.sekmeler a::after, .sekmeler button::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--vurgu);
+  transform: scaleX(0); transition: transform var(--hiz-2) var(--egri-giris);
+}
+.sekmeler [aria-selected="true"]::after { transform: scaleX(1); }
+.panel:not([hidden]) { animation: belir var(--hiz-2) var(--egri-giris) both; }
+
+/* ---------- Alt sayfa: aşağıdan kayarak açılır/kapanır, arka plan yumuşakça kararır ---------- */
+dialog.sayfa-alt {
+  background: var(--yuzey); border-radius: var(--yaricap-buyuk) var(--yaricap-buyuk) 0 0; transform: translateY(100%);
+  transition: transform var(--hiz-3) var(--egri-giris), overlay var(--hiz-3) allow-discrete, display var(--hiz-3) allow-discrete;
+}
+dialog.sayfa-alt[open] { transform: translateY(0); }
+@starting-style { dialog.sayfa-alt[open] { transform: translateY(100%); } }
+dialog.sayfa-alt::backdrop {
+  background: rgba(28, 26, 23, 0);
+  transition: background-color var(--hiz-3) var(--egri), overlay var(--hiz-3) allow-discrete, display var(--hiz-3) allow-discrete;
+}
+dialog.sayfa-alt[open]::backdrop { background: rgba(28, 26, 23, .32); }
+@starting-style { dialog.sayfa-alt[open]::backdrop { background: rgba(28, 26, 23, 0); } }
+.sayfa-alt .bas { background: var(--yuzey); padding-top: 18px; }
+.sayfa-alt .bas::before { content: ""; position: absolute; top: 7px; left: 50%; width: 36px; height: 4px; margin-left: -18px; border-radius: 4px; background: var(--cizgi-guclu); }
+
+/* ---------- Kısa bildirim: alttan yükselir ---------- */
+.toast { border-radius: 12px; box-shadow: 0 8px 28px rgba(28, 26, 23, .22); }
+.toast.gir { animation: toast-gir var(--hiz-3) var(--egri-giris) both; }
+
+/* ---------- Açılır bölümler: yükseklik yumuşakça açılır, ok döner ---------- */
+details::details-content { block-size: 0; overflow-y: clip; transition: block-size var(--hiz-3) var(--egri-giris), content-visibility var(--hiz-3) allow-discrete; }
+details[open]::details-content { block-size: auto; }
+.on-bilgi summary { list-style: none; gap: 8px; transition: color var(--hiz-1) var(--egri); }
+.on-bilgi summary::-webkit-details-marker { display: none; }
+.on-bilgi summary::before {
+  content: ""; flex: none; width: 7px; height: 7px; margin: 0 4px 2px 2px;
+  border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor;
+  transform: rotate(-45deg); transition: transform var(--hiz-2) var(--egri);
+}
+.on-bilgi[open] > summary::before { transform: rotate(45deg); }
+
+/* ---------- Parti satırı açılınca isimler süzülerek gelir ---------- */
+.parti-satir { transition: background-color var(--hiz-2) var(--egri); }
+.isimler:not([hidden]) { animation: belir var(--hiz-2) var(--egri-giris) both; }
+
+/* ---------- Liste satırları ilk çizimde hafif gecikmeli belirir (yalnızca ilk on iki) ---------- */
+.liste > li:nth-child(-n+12) { animation: belir var(--hiz-3) var(--egri-giris) both; }
+.liste > li:nth-child(2) { animation-delay: 30ms; }
+.liste > li:nth-child(3) { animation-delay: 60ms; }
+.liste > li:nth-child(4) { animation-delay: 90ms; }
+.liste > li:nth-child(5) { animation-delay: 120ms; }
+.liste > li:nth-child(n+6):nth-child(-n+12) { animation-delay: 150ms; }
+
+/* ---------- İlk açılış: adım değişince içerik süzülür, ilerleme çubuğu dolar ---------- */
+.adim > * { animation: belir var(--hiz-3) var(--egri-giris) both; }
+.adim > :nth-child(2) { animation-delay: 40ms; }
+.adim > :nth-child(n+3) { animation-delay: 80ms; }
+.adim-ust .ilerleme i { border-radius: 3px; transition: background-color var(--hiz-3) var(--egri); }
+.adim-alt { background: var(--bulanik); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+
+/* ---------- Oy çubuğu: ilk görünüşte soldan sağa bir kez çizilir ---------- */
+.sayim { border-radius: 4px; overflow: hidden; animation: ciz 700ms var(--egri-giris) both; }
+.sayim.ince { border-radius: 3px; }
+
+/* ---------- Sayfalar arası geçiş: alt çubuk sabit kalır, etkin sekme hapı yeni sekmeye kayar ---------- */
+@view-transition { navigation: auto; }
+.alt-nav { view-transition-name: alt-nav; }
+::view-transition-old(root) { animation: var(--hiz-1) var(--egri) both sayfa-cik; }
+::view-transition-new(root) { animation: var(--hiz-3) var(--egri-giris) both sayfa-gir; }
+::view-transition-group(sekme-hap) { animation-duration: var(--hiz-3); animation-timing-function: var(--egri-giris); }
+
+@keyframes belir { from { opacity: 0; transform: translateY(6px); } }
+@keyframes sayfa-gir { from { opacity: 0; transform: translateY(8px); } }
+@keyframes sayfa-cik { to { opacity: 0; } }
+@keyframes ciz { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes tik { 50% { transform: scale(1.05); } }
+@keyframes toast-gir { from { opacity: 0; transform: translate(-50%, 14px) scale(.98); } }
+
+/* ---------- Hareketi azalt ---------- */
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

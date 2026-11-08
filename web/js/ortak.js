@@ -184,6 +184,7 @@ export function toast(mesaj) {
   let t = document.querySelector('.toast');
   if (!t) { t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); document.body.append(t); }
   t.textContent = mesaj; t.hidden = false;
+  t.classList.remove('gir'); void t.offsetWidth; t.classList.add('gir');  // giriş hareketini her seferinde yeniden oynat
   clearTimeout(_toastZaman); _toastZaman = setTimeout(() => { t.hidden = true; }, 3200);
 }
 document.addEventListener('click', async e => {

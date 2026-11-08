@@ -69,7 +69,7 @@ SEKMELER = [("akis", "Akış", "index.html"), ("oturumlar", "Oturumlar", "oturum
 
 def alt_nav(aktif: str | None) -> str:
     ogeler = "".join(
-        f'<li><a href="{url}"{" aria-current=\"page\"" if anahtar == aktif else ""}>{SIMGE[anahtar]}{ad}</a></li>'
+        f'<li><a href="{url}"{" aria-current=\"page\"" if anahtar == aktif else ""}><span class="hap">{SIMGE[anahtar]}</span>{ad}</a></li>'
         for anahtar, ad, url in SEKMELER)
     return f'<nav class="alt-nav" aria-label="Ana gezinme"><ul>{ogeler}</ul></nav>'
 
@@ -98,7 +98,7 @@ __CSP__<title>{escape(baslik)}</title>
 <meta name="apple-mobile-web-app-title" content="Meclis"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preload" href="fonts/newsreader-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/ibm-plex-sans-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="fontlar.css"><link rel="stylesheet" href="stil.css"><link rel="stylesheet" href="partiler.css">
+<link rel="stylesheet" href="fontlar.css"><link rel="stylesheet" href="stil.css"><link rel="stylesheet" href="hareket.css"><link rel="stylesheet" href="partiler.css">
 <script>{TEMA_JS}</script>
 </head><body>
 <a class="gizli-metin" href="#ana">İçeriğe geç</a>

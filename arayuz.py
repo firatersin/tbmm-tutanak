@@ -350,7 +350,7 @@ def build() -> Path:
         if hedef.exists():
             shutil.rmtree(hedef)
         shutil.copytree(WEB / alt, hedef)
-    for f in ("stil.css", "fontlar.css"):
+    for f in ("stil.css", "hareket.css", "fontlar.css"):
         shutil.copy2(WEB / f, OUT / f)
     (OUT / "partiler.css").write_text(S.parti_css(list(ortak["koltuk"])), encoding="utf-8")
     for icon in STATIC.glob("*.png"):
@@ -359,7 +359,7 @@ def build() -> Path:
     (OUT / "manifest.webmanifest").write_text(json.dumps(MANIFEST, ensure_ascii=False, indent=1), encoding="utf-8")
 
     kabuk = (["./", "index.html", "oturumlar.html", "oylamalar.html", "ara.html", "takip.html", "hosgeldiniz.html",
-              "manifest.webmanifest", "stil.css", "fontlar.css", "partiler.css",
+              "manifest.webmanifest", "stil.css", "hareket.css", "fontlar.css", "partiler.css",
               "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "favicon-32.png",
               "fonts/newsreader-normal-latin.woff2", "fonts/newsreader-normal-latin-ext.woff2",
               "fonts/ibm-plex-sans-normal-latin.woff2", "fonts/ibm-plex-sans-normal-latin-ext.woff2"]
