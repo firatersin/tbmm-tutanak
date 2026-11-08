@@ -150,6 +150,43 @@ def sonuc_kisa(sonuc: str) -> tuple[str, str]:
     return ("kabul", "Kabul edildi") if s else ("", "")
 
 
+ANA_PARTI_ESIGI = 20  # bu kadar ya da daha çok üyesi olan partiler ayrı gösterilir; kalanlar "Diğer"
+
+
+def parti_gruplari(pv: dict[str, list[int]]) -> list[tuple[str, list[int]]]:
+    """[(parti, [kabul, ret, çekimser, katılmadı])]: üye sayısına göre, küçükler ve bağımsızlar 'Diğer'de.
+    web/js/ortak.js içindeki partiGruplari ile aynı kural."""
+    ana, diger = [], [0, 0, 0, 0]
+    for p, a in sorted(pv.items(), key=lambda kv: (-sum(kv[1]), kv[0])):
+        if p != "Bağımsız" and sum(a) >= ANA_PARTI_ESIGI:
+            ana.append((p, list(a)))
+        else:
+            diger = [x + y for x, y in zip(diger, a)]
+    return ana + ([("Diğer", diger)] if sum(diger) else [])
+
+
+def parti_ozeti(p: str, a: list[int]) -> str:
+    adlar = ("kabul", "ret", "çekimser", "katılmadı")
+    return f"{p}: " + ", ".join(f"{n} {ad}" for n, ad in zip(a, adlar) if n)
+
+
+def parti_seridi(pv: dict[str, list[int]]) -> str:
+    """Küçük çoklu grafik: her parti için bir çubuk; tam genişlik = partinin üye sayısı,
+    dolu kısımlar kabul/ret/çekimser, boş iz = katılmadı."""
+    hucreler = []
+    for p, a in parti_gruplari(pv):
+        dilim = "".join(f'<i class="{c}" style="width:{n / sum(a) * 100:.1f}%"></i>'
+                        for c, n in zip("krc", a[:3]) if n)
+        hucreler.append(f'<span class="ps-hucre" data-ipucu="{escape(parti_ozeti(p, a))}">'
+                        f'<span class="ps-ad">{escape(p)}</span><span class="ps-cubuk">{dilim}</span></span>')
+    ozet = "; ".join(parti_ozeti(p, a) for p, a in parti_gruplari(pv))
+    return f'<div class="parti-seridi" role="img" aria-label="Partilere göre: {escape(ozet)}">{"".join(hucreler)}</div>'
+
+
+def oy_dizisi(c) -> list[int]:
+    return [c.get("KABUL", 0), c.get("RET", 0), c.get("ÇEKİMSER", 0), c.get("KATILMADI", 0)]
+
+
 def sonuc_satiri(sonuc: str, sayilar: dict | list) -> str:
     """Genel bakış satırı: sonuç + kabul/ret oranını gösteren ince çubuk + iki sayı."""
     if isinstance(sayilar, list):

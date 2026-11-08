@@ -151,6 +151,53 @@ export function sonucSatiriHTML(so, to) {
     + `<span class="oran" aria-hidden="true"><span class="isaret k">✓</span>${k || 0}<span class="isaret r">✕</span>${r || 0}</span></div>`;
 }
 
+// Partiler küçük çoklu grafiği; sablon.py içindeki parti_gruplari/parti_seridi ile aynı kural.
+const ANA_PARTI_ESIGI = 20;
+const toplam = a => a.reduce((x, y) => x + y, 0);
+export function partiGruplari(pv) {
+  const ana = []; let diger = [0, 0, 0, 0];
+  Object.entries(pv || {})
+    .sort(([p, a], [q, b]) => toplam(b) - toplam(a) || (p < q ? -1 : p > q ? 1 : 0))
+    .forEach(([p, a]) => {
+      if (p !== 'Bağımsız' && toplam(a) >= ANA_PARTI_ESIGI) ana.push([p, a]);
+      else diger = diger.map((x, i) => x + a[i]);
+    });
+  return toplam(diger) ? [...ana, ['Diğer', diger]] : ana;
+}
+const OY_ADLARI = ['kabul', 'ret', 'çekimser', 'katılmadı'];
+const partiOzeti = (p, a) => `${p}: ` + a.map((n, i) => n ? `${n} ${OY_ADLARI[i]}` : '').filter(Boolean).join(', ');
+export function partiSeridiHTML(pv) {
+  const g = partiGruplari(pv); if (!g.length) return '';
+  const hucreler = g.map(([p, a]) => {
+    const t = toplam(a);
+    const dilim = ['k', 'r', 'c'].map((c, i) => a[i] ? `<i class="${c}" style="width:${(a[i] / t * 100).toFixed(1)}%"></i>` : '').join('');
+    return `<span class="ps-hucre" data-ipucu="${esc(partiOzeti(p, a))}"><span class="ps-ad">${esc(p)}</span><span class="ps-cubuk">${dilim}</span></span>`;
+  }).join('');
+  return `<div class="parti-seridi" role="img" aria-label="Partilere göre: ${esc(g.map(([p, a]) => partiOzeti(p, a)).join('; '))}">${hucreler}</div>`;
+}
+
+// ---------- İpucu: grafik öğelerinde fareyle gezinme, dokunma ya da klavye odağı ----------
+let _ipucu;
+function ipucuGoster(el) {
+  if (!_ipucu) { _ipucu = document.createElement('div'); _ipucu.className = 'ipucu'; _ipucu.setAttribute('aria-hidden', 'true'); document.body.append(_ipucu); }
+  _ipucu.textContent = el.dataset.ipucu; _ipucu.hidden = false;
+  const r = el.getBoundingClientRect(), w = _ipucu.offsetWidth, h = _ipucu.offsetHeight;
+  const x = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2));
+  const y = r.top - h - 8 < 60 ? r.bottom + 8 : r.top - h - 8;
+  _ipucu.style.left = `${x}px`; _ipucu.style.top = `${y}px`;
+}
+const ipucuGizle = () => { if (_ipucu) _ipucu.hidden = true; };
+document.addEventListener('pointerover', e => {
+  if (e.pointerType !== 'mouse') return;
+  const el = e.target.closest('[data-ipucu]'); el ? ipucuGoster(el) : ipucuGizle();
+});
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-ipucu]');
+  if (el && !el.closest('a')) ipucuGoster(el); else ipucuGizle();
+});
+document.addEventListener('focusin', e => { const el = e.target.closest?.('[data-ipucu]'); el ? ipucuGoster(el) : ipucuGizle(); });
+addEventListener('scroll', ipucuGizle, { passive: true });
+
 /** Genel bakış satırı: ne olduğu, sonucu ve (kişisel akışta) neden göründüğü. Ayrıntılar kayıt sayfasında. */
 export function satirHTML(o, nedenler, okundu) {
   const yeni = !okundu[o.id];
@@ -158,7 +205,7 @@ export function satirHTML(o, nedenler, okundu) {
   if (o.t === 'O') {
     ust = `<span class="tur">Oylama</span>${o.s ? `<span>${saatYaz(o.s)}</span>` : ''}`;
     baslik = esc(o.b);
-    govde = sonucSatiriHTML(o.so, o.to);
+    govde = sonucSatiriHTML(o.so, o.to) + partiSeridiHTML(o.pv);
   } else {
     ust = `<span class="tur">Tutanak</span><span>${o.ko} konuşmacı</span>${o.n ? `<span>${o.n} oylama</span>` : ''}`;
     baslik = `${o.bn}. Birleşim tutanağı`;

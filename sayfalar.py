@@ -55,7 +55,8 @@ def oylama_satiri(v: dict, *, oturum_goster: bool = True, ek: str = "", sayim_ve
     q = escape(f"{v['baslik']} {v['sonuc']} {v['tarih_yazi']} {v['birlesim']}. birleşim")
     return (f'<li class="satir" data-q="{q}" data-f="{sonuc_turu(v["sonuc"])}" data-id="{escape(v["read_id"])}">'
             f'<a href="{v["page"]}"><div class="bilgi">{"".join(bilgi)}</div><h3>{escape(A.temiz_baslik(v["baslik"]))}</h3>'
-            f'{S.sonuc_satiri(v["sonuc"], sayilar)}{ek}</a></li>')
+            f'{S.sonuc_satiri(v["sonuc"], sayilar)}'
+            f'{S.parti_seridi({p: S.oy_dizisi(c) for p, c in A.party_table(v)})}{ek}</a></li>')
 
 
 def ay_gruplari(ogeler: list, tarih, satir) -> str:
@@ -122,10 +123,83 @@ def oturumlar_sayfasi(sessions: list[dict]) -> str:
 
 # ---------- Oylamalar ----------
 
+AY_KISA = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"]
+OY_ADLARI = ("kabul", "ret", "çekimser", "katılmadı")
+
+
+def ay_grafigi(votes: list[dict], turler: list[str]) -> tuple[str, str]:
+    """Aylara göre oylama sayısı (kabul edilen / edilmeyen), oylama olmayan aylar dahil."""
+    ay: dict[tuple[int, int], list[int]] = {}
+    for v, tur in zip(votes, turler):
+        ay.setdefault((v["date"].year, v["date"].month), [0, 0])[1 if tur == "ret" else 0] += 1
+    (y, m), son = min(ay), max(ay)
+    aylar = []
+    while (y, m) <= son:
+        aylar.append((y, m))
+        y, m = (y + 1, 1) if m == 12 else (y, m + 1)
+    tepe = max(sum(x) for x in ay.values())
+    sutunlar = []
+    for y, m in aylar:
+        k, r = ay.get((y, m), [0, 0])
+        ipucu = f"{A.AYLAR[m - 1]} {y}: " + (f"{k + r} oylama ({k} kabul edildi, {r} kabul edilmedi)" if k + r else "oylama yok")
+        yil = f"<small>’{str(y)[2:]}</small>" if m == 1 or (y, m) == aylar[0] else ""
+        sutunlar.append(
+            f'<div class="ay-sutun" tabindex="0" data-ipucu="{escape(ipucu)}" aria-label="{escape(ipucu)}">'
+            f'<div class="ay-cubuk">'
+            + (f'<i class="r" style="height:{r / tepe * 100:.1f}%"></i>' if r else "")
+            + (f'<i class="k" style="height:{k / tepe * 100:.1f}%"></i>' if k else "")
+            + f'</div><span>{AY_KISA[m - 1]}{yil}</span></div>')
+    aralik = f"{A.AYLAR[aylar[0][1] - 1]} {aylar[0][0]} – {A.AYLAR[aylar[-1][1] - 1]} {aylar[-1][0]}"
+    return "".join(sutunlar), aralik
+
+
+def parti_egilimi(votes: list[dict]) -> tuple[str, str]:
+    """Her oylamada partinin en çok verdiği oy; partilere göre sayılır."""
+    sayac: dict[str, list[int]] = {}
+    for v in votes:
+        for p, a in S.parti_gruplari({p: S.oy_dizisi(c) for p, c in A.party_table(v)}):
+            if p != "Diğer":
+                sayac.setdefault(p, [0, 0, 0, 0])[max(range(4), key=lambda j: a[j])] += 1
+    satirlar, tablo = [], []
+    for p in sorted(sayac, key=lambda p: (-sum(sayac[p]), p)):
+        a = sayac[p]
+        ipucu = f"{p}, {sum(a)} oylamada çoğunlukla: " + ", ".join(f"{x} {ad}" for x, ad in zip(a, OY_ADLARI) if x)
+        dilim = "".join(f'<i class="{c}" style="flex:{x}"></i>' for c, x in zip("krcx", a) if x)
+        satirlar.append(f'<div class="po-satir" tabindex="0" data-ipucu="{escape(ipucu)}" aria-label="{escape(ipucu)}">'
+                        f'<span class="po-ad">{escape(p)}</span><span class="po-cubuk">{dilim}</span></div>')
+        tablo.append(f"<tr><th scope=row>{escape(p)}</th>" + "".join(f"<td>{x}</td>" for x in a) + "</tr>")
+    return "".join(satirlar), "".join(tablo)
+
+
+def oylama_ozeti(votes: list[dict]) -> str:
+    """Oylamalar sekmesinin üstündeki özet: sayılar, aylara göre oylamalar, partilerin çoğunluk oyu."""
+    if not votes:
+        return ""
+    turler = [sonuc_turu(v["sonuc"]) for v in votes]
+    kutular = "".join(f'<div class="ozet-kutu"><b>{n}</b><span>{ad}</span></div>' for n, ad in (
+        (len(votes), "oylama"), (turler.count("kabul"), "kabul edildi"), (turler.count("ret"), "kabul edilmedi")))
+    sutunlar, aralik = ay_grafigi(votes, turler)
+    po, tablo = parti_egilimi(votes)
+    return f"""<section class="oy-ozet" aria-label="Oylama özeti">
+<div class="ozet-kutular">{kutular}</div>
+<h2 class="ozet-baslik">Aylara göre <span>{aralik}</span></h2>
+<div class="lejant" aria-hidden="true"><span><i class="k"></i>Kabul edildi</span><span><i class="r"></i>Kabul edilmedi</span></div>
+<div class="ay-grafik">{sutunlar}</div>
+<h2 class="ozet-baslik">Partiler çoğunlukla nasıl oy verdi</h2>
+<div class="lejant" aria-hidden="true"><span><i class="k"></i>Kabul</span><span><i class="r"></i>Ret</span><span><i class="c"></i>Çekimser</span><span><i class="x"></i>Katılmadı</span></div>
+<div class="po-grafik">{po}</div>
+<details class="tablo-ac"><summary>Tablo olarak göster</summary>
+<table class="ozet-tablo"><thead><tr><th scope=col>Parti</th><th scope=col>Kabul</th><th scope=col>Ret</th><th scope=col>Çekimser</th><th scope=col>Katılmadı</th></tr></thead>
+<tbody>{tablo}</tbody></table></details>
+</section>"""
+
+
 def oylamalar_sayfasi(votes: list[dict]) -> str:
     sirali = sorted(votes, key=lambda v: (v["date"], v["baslangic"] or ""), reverse=True)
+    ozet = oylama_ozeti(sirali)
     govde = f"""<div class="kap">
 <div class="baslik"><h1>Oylamalar</h1><p class="alt" id="sayac" aria-live="polite">{len(votes)} açık oylama</p></div>
+{ozet}
 <div class="cipler" id="filtre" role="group" aria-label="Sonuca göre">
   <button class="cip" data-v="" aria-pressed="true">Tümü</button><button class="cip" data-v="kabul" aria-pressed="false">Kabul</button>
   <button class="cip" data-v="ret" aria-pressed="false">Ret</button></div>
