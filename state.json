@@ -2056,13 +2056,15 @@
  "28-5-18": {
   "donem": 28,
   "dosyalar": [
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/78528c64-b6fa-4bc5-8323-6c663623b445.html",
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/b76f9d1f-a8df-46bf-91cc-96700cba3710.pdf",
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/d54c167a-9426-4a6b-95a3-f6c10505f32b.docx"
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/18b0422e-3249-4793-8aa3-f8c28c0dfd74.docx",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/671e384c-9abd-4c8b-b80b-7475c232ff58.html",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/b38c09d1-be5c-4034-994b-0f017e33e488.pdf"
   ],
   "durum": "Ham",
   "id": "e81c5b67-4ae6-441f-85d3-01a1ee871dd2",
-  "oylama_urls": [],
+  "oylama_urls": [
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/AcikOylamaSonuc/b6372f31-c890-4f44-b9e2-c0c798e9cb50.html"
+  ],
   "ozet_url": null,
   "tarih": "18 Kasım 2026 Çarşamba",
   "yil": 5
