@@ -7,19 +7,19 @@
   "tarih": "18 Kasım 2026 Çarşamba",
   "durum": "Ham",
   "kaynaklar": {
-    "metin_html": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/671e384c-9abd-4c8b-b80b-7475c232ff58.html",
-    "pdf": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/b38c09d1-be5c-4034-994b-0f017e33e488.pdf",
-    "docx": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/18b0422e-3249-4793-8aa3-f8c28c0dfd74.docx",
-    "ozet": null,
+    "metin_html": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/b91e49ae-8ba9-40cd-8082-7fef0aa50346.html",
+    "pdf": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/bba543ed-94ac-4a06-a50c-4592176212c1.pdf",
+    "docx": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/208275e4-2c96-45c9-84b0-ff9bc2c7f42f.docx",
+    "ozet": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ozet/ecd2d55b-b065-471e-9e02-14e3059f04eb.html",
     "oylama": [
       "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/AcikOylamaSonuc/b6372f31-c890-4f44-b9e2-c0c798e9cb50.html"
     ],
     "tumu": [
-      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/18b0422e-3249-4793-8aa3-f8c28c0dfd74.docx",
-      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/671e384c-9abd-4c8b-b80b-7475c232ff58.html",
-      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/b38c09d1-be5c-4034-994b-0f017e33e488.pdf"
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/208275e4-2c96-45c9-84b0-ff9bc2c7f42f.docx",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/b91e49ae-8ba9-40cd-8082-7fef0aa50346.html",
+      "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/18/Ham/bba543ed-94ac-4a06-a50c-4592176212c1.pdf"
     ]
   },
   "oylama_sayisi": 1,
-  "indirildi": "2026-11-19T02:40:39+03:00"
+  "indirildi": "2026-11-19T18:11:38+03:00"
 }
