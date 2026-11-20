@@ -2079,7 +2079,7 @@
   "durum": "Ham",
   "id": "aa31826a-2655-405f-ab8e-01a1f38e5d1b",
   "oylama_urls": [],
-  "ozet_url": null,
+  "ozet_url": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/19/Ozet/a770b0e2-a259-4cbf-b430-4f4346ca0dea.html",
   "tarih": "19 Kasım 2026 Perşembe",
   "yil": 5
  },
@@ -2175,11 +2175,11 @@
  "28-5-8": {
   "donem": 28,
   "dosyalar": [
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/8/Ham/1c896778-fbfc-4a50-aab0-83737d820393.html",
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/8/Ham/b84da2db-c213-4fa3-b515-cb65a83cb359.docx",
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/8/Ham/dac1f25e-2e05-4a31-9d03-32e691d91383.pdf"
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/8/Tam/18d0a017-8f6d-4456-93f9-268aff127585.docx",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/8/Tam/84bfbf43-283d-4be1-ba05-2e2fbd113f0b.html",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/8/Tam/ee293b2a-ed26-4983-ab53-03d92e5c4a65.pdf"
   ],
-  "durum": "Ham",
+  "durum": "Tam",
   "id": "1f7decfa-ff05-456f-a083-01a1594aebac",
   "oylama_urls": [],
   "ozet_url": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/8/Ozet/b5c1e670-7316-45f7-ac6a-eae635f303f7.html",
@@ -2189,11 +2189,11 @@
  "28-5-9": {
   "donem": 28,
   "dosyalar": [
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/9/Ham/01ba97e9-9021-4908-a92d-55cc5a7ca0ec.pdf",
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/9/Ham/8883f066-f012-400b-a13f-6d5c54734113.docx",
-   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/9/Ham/f36a4194-b34f-4c96-9908-0b7467904951.html"
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/9/Tam/044039d4-c4f2-420d-a494-47b407d7148d.html",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/9/Tam/7a3e6c35-4d40-42c4-8a43-df83fbd00a77.docx",
+   "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/9/Tam/b90cd76b-e0af-47b3-b569-62e2320d0a38.pdf"
   ],
-  "durum": "Ham",
+  "durum": "Tam",
   "id": "99ce5d0e-ed51-49d1-a625-01a15e389926",
   "oylama_urls": [],
   "ozet_url": "https://cdn.tbmm.gov.tr/TbmmWeb/Tutanak/28/5/9/Ozet/b0168fb9-37c5-40e5-a853-e52533af38b9.html",
