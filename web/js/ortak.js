@@ -105,7 +105,8 @@ export async function eslestir(d, t) {
     for (const id of t.mv) {
       const i = d.mvIndex[id]; if (i === undefined) continue;
       const ad = d.mv[i][1];
-      if (o.t === 'T' && o.k[i]) n.push({ k: `${esc(ad)} konuştu`, m: `<b>${esc(ad)}</b> konuştu (${o.k[i][0]})`, u: `${o.p}#konusmaci=${o.k[i][1]}` });
+      const kv = o.t === 'T' && o.k[i];  // sayı ya da [sayı, konuşmacı kimliği] (kimlik addan farklıysa)
+      if (kv) n.push({ k: `${esc(ad)} konuştu`, m: `<b>${esc(ad)}</b> konuştu (${Array.isArray(kv) ? kv[0] : kv})`, u: `${o.p}#konusmaci=${Array.isArray(kv) ? kv[1] : slug(ad)}` });
       if (o.t === 'O' && o.v[i] && o.v[i] !== '-') n.push({ k: `${esc(ad)}: ${OY[o.v[i]]}`, m: `<b>${esc(ad)}</b>: ${OY[o.v[i]]}` });
     }
     for (const il of t.iller) {
@@ -191,8 +192,14 @@ document.addEventListener('pointerover', e => {
   if (e.pointerType !== 'mouse') return;
   const el = e.target.closest('[data-ipucu]'); el ? ipucuGoster(el) : ipucuGizle();
 });
+// Dar sütunlu grafikte parmak tam sütuna denk gelmese de en yakın sütun seçilir
+const enYakinSutun = (graf, x) => [...graf.querySelectorAll('[data-ipucu]')].reduce((en, s) => {
+  const r = s.getBoundingClientRect(), d = Math.abs(r.left + r.width / 2 - x);
+  return !en || d < en.d ? { s, d } : en;
+}, null)?.s;
 document.addEventListener('click', e => {
-  const el = e.target.closest('[data-ipucu]');
+  const graf = e.target.closest('.ay-grafik');
+  const el = graf ? enYakinSutun(graf, e.clientX) : e.target.closest('[data-ipucu]');
   if (el && !el.closest('a')) ipucuGoster(el); else ipucuGizle();
 });
 document.addEventListener('focusin', e => { const el = e.target.closest?.('[data-ipucu]'); el ? ipucuGoster(el) : ipucuGizle(); });

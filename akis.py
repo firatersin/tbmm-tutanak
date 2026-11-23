@@ -135,7 +135,8 @@ def build_data(sessions: list[dict], votes: list[dict], out: Path) -> dict:
             i = speaker_to_mp(sp["name"], sp["place"], index)
             if i is None:
                 continue
-            konusan[str(i)] = [sp["count"], sid]
+            # Konuşmacı kimliği çoğunlukla milletvekili adının kısa adresidir; yalnızca farklıysa saklanır (veri küçülür)
+            konusan[str(i)] = sp["count"] if sid == A.slug(roster[i][1]) else [sp["count"], sid]
             parti_k[roster[i][3]] += 1
             il_k[roster[i][2]] += 1
         items.append({

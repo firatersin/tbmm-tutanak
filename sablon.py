@@ -91,13 +91,13 @@ def sayfa(baslik: str, govde: str, *, sekme: str | None = None, geri: tuple[str,
 __CSP__<title>{escape(baslik)}</title>
 {f'<meta name="description" content="{escape(aciklama)}">' if aciklama else ''}
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#F7F2E8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1A1714" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FAF8F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#181512" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="favicon-32.png" sizes="32x32"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Meclis"><meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="preload" href="fonts/newsreader-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/ibm-plex-sans-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/newsreader-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/ibm-plex-sans-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="fontlar.css"><link rel="stylesheet" href="stil.css"><link rel="stylesheet" href="hareket.css"><link rel="stylesheet" href="partiler.css">
 <script>{TEMA_JS}</script>
 </head><body>

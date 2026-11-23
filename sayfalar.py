@@ -139,7 +139,7 @@ def ay_grafigi(votes: list[dict], turler: list[str]) -> tuple[str, str]:
         y, m = (y + 1, 1) if m == 12 else (y, m + 1)
     tepe = max(sum(x) for x in ay.values())
     sutunlar = []
-    for y, m in aylar:
+    for i, (y, m) in enumerate(aylar):
         k, r = ay.get((y, m), [0, 0])
         ipucu = f"{A.AYLAR[m - 1]} {y}: " + (f"{k + r} oylama ({k} kabul edildi, {r} kabul edilmedi)" if k + r else "oylama yok")
         yil = f"<small>’{str(y)[2:]}</small>" if m == 1 or (y, m) == aylar[0] else ""
@@ -148,7 +148,7 @@ def ay_grafigi(votes: list[dict], turler: list[str]) -> tuple[str, str]:
             f'<div class="ay-cubuk">'
             + (f'<i class="r" style="height:{r / tepe * 100:.1f}%"></i>' if r else "")
             + (f'<i class="k" style="height:{k / tepe * 100:.1f}%"></i>' if k else "")
-            + f'</div><span>{AY_KISA[m - 1]}{yil}</span></div>')
+            + f'</div><span{"" if i % 3 == 0 else " class=ikincil"}>{AY_KISA[m - 1]}{yil}</span></div>')
     aralik = f"{A.AYLAR[aylar[0][1] - 1]} {aylar[0][0]} – {A.AYLAR[aylar[-1][1] - 1]} {aylar[-1][0]}"
     return "".join(sutunlar), aralik
 

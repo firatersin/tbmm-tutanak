@@ -271,8 +271,8 @@ MANIFEST = {
     "start_url": "./",
     "scope": "./",
     "display": "standalone",
-    "background_color": "#F7F2E8",
-    "theme_color": "#F7F2E8",
+    "background_color": "#FAF8F4",
+    "theme_color": "#FAF8F4",
     "icons": [
         {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
         {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
@@ -361,8 +361,7 @@ def build() -> Path:
     kabuk = (["./", "index.html", "oturumlar.html", "oylamalar.html", "ara.html", "takip.html", "hosgeldiniz.html",
               "manifest.webmanifest", "stil.css", "hareket.css", "fontlar.css", "partiler.css",
               "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "favicon-32.png",
-              "fonts/newsreader-normal-latin.woff2", "fonts/newsreader-normal-latin-ext.woff2",
-              "fonts/ibm-plex-sans-normal-latin.woff2", "fonts/ibm-plex-sans-normal-latin-ext.woff2"]
+              "fonts/newsreader-normal.woff2", "fonts/newsreader-italic.woff2", "fonts/ibm-plex-sans-normal.woff2"]
              + [f"js/{p.name}" for p in (WEB / "js").glob("*.js") if p.name != "hesap.js"])
     (OUT / "sw.js").write_text(SW_JS.replace("__SURUM__", ortak["surum"]).replace("__KABUK__", json.dumps(kabuk)),
                                encoding="utf-8")
